@@ -1,3 +1,4 @@
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import type { Address } from "viem";
 import {
@@ -69,7 +70,7 @@ const configuredMiddleware =
             : {}),
         },
       )
-    : async (_request) =>
+    : async (_request: NextRequest) =>
         new NextResponse(
           JSON.stringify({
             error: payTo
