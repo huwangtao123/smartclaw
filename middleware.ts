@@ -13,6 +13,7 @@ const rawNetwork = (process.env.X402_NETWORK ?? "base") as Network;
 const facilitatorEnv = process.env.NEXT_PUBLIC_FACILITATOR_URL;
 const cdpKeyId = process.env.CDP_API_KEY_ID;
 const cdpKeySecret = process.env.CDP_API_KEY_SECRET;
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
 
 const facilitatorUrl =
   facilitatorEnv !== undefined
@@ -39,6 +40,7 @@ const routes: RoutesConfig = {
     network: rawNetwork,
     config: {
       description: "Access AliDashboard premium leaderboard insights",
+      resource: siteUrl ? `${siteUrl}/premium` : undefined,
     },
   },
   "/api/premium": {
@@ -48,6 +50,7 @@ const routes: RoutesConfig = {
       description: "Access AliDashboard premium leaderboard API",
       mimeType: "application/json",
       discoverable: false,
+      resource: siteUrl ? `${siteUrl}/api/premium` : undefined,
     },
   },
 } as const;
