@@ -42,6 +42,45 @@ function getPnl(row: Trader) {
   return row.pnlClean ?? row.pnl ?? 0;
 }
 
+function getDebankProfileUrl(address: string) {
+  return `https://debank.com/profile/${address}`;
+}
+
+function buildRestList(
+  list: Trader[],
+  highlightedAddress?: string,
+  maxCount = 9,
+) {
+  if (!list.length) return [];
+
+  const normalizedHighlight = highlightedAddress?.toLowerCase();
+  const seen = new Set<string>();
+  const result: Trader[] = [];
+
+  for (const row of list) {
+    const address = row.trader;
+    if (!address) continue;
+
+    const key = address.toLowerCase();
+    if (normalizedHighlight && key === normalizedHighlight) {
+      continue;
+    }
+
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    result.push(row);
+
+    if (result.length >= maxCount) {
+      break;
+    }
+  }
+
+  return result;
+}
+
 function LanguageToggle({
   language,
   onChange,
@@ -105,6 +144,20 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
       topByPnl.reduce((acc: number, row: Trader) => acc + getPnl(row), 0),
     [topByPnl],
   );
+
+  const topWinner = topByPnl[0];
+  const topWinnerAddress = topWinner?.trader;
+
+  const restTopByPnl = useMemo(() => {
+    return buildRestList(topByPnl, topWinnerAddress, 9);
+  }, [topByPnl, topWinnerAddress]);
+
+  const topRoiLeader = topByRoi[0];
+  const topRoiLeaderAddress = topRoiLeader?.trader;
+
+  const restTopByRoi = useMemo(() => {
+    return buildRestList(topByRoi, topRoiLeaderAddress, 9);
+  }, [topByRoi, topRoiLeaderAddress]);
 
   const headline = isZh
     ? "f(x) 协议盈利脉搏"
@@ -343,38 +396,65 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
                   : "Highlighting the capital that fuels the higher winning share"}
               </div>
             </header>
-            <table className="mt-4 w-full border-collapse text-left text-sm text-slate-200">
-              <thead className="text-xs uppercase tracking-[0.25em] text-slate-400">
-                <tr className="border-b border-white/10">
-                  <th className="py-2 pr-4">{isZh ? "排名" : "Rank"}</th>
-                  <th className="py-2 pr-4">{isZh ? "钱包" : "Wallet"}</th>
-                  <th className="py-2 pr-4 text-right">
-                    {isZh ? "PNL" : "PNL"}
-                  </th>
-                  <th className="py-2 text-right">
-                    {isZh ? "成交量" : "Volume"}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {topByPnl.map((row) => (
-                  <tr key={row.trader} className="border-b border-white/5">
-                    <td className="py-2 pr-4 font-mono text-slate-300">
-                      #{row.rank}
-                    </td>
-                    <td className="py-2 pr-4 font-mono text-xs text-slate-200">
-                      {shortenAddress(row.trader)}
-                    </td>
-                    <td className="py-2 pr-4 text-right text-emerald-300">
-                      {formatCurrency(getPnl(row))}
-                    </td>
-                    <td className="py-2 text-right text-slate-300">
+            {topWinner ? (
+              <div className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+                <div className="text-xs uppercase tracking-[0.35em] text-emerald-200/90">
+                  {isZh ? "PNL 冠军" : "Top PNL winner"}
+                </div>
+                <div className="mt-2 flex flex-col gap-1 font-mono text-xs text-emerald-50">
+                  <span>
+                    {isZh ? "地址" : "Address"}: {" "}
+                    <a
+                      href={getDebankProfileUrl(topWinner.trader)}
+                      className="underline decoration-emerald-200/60 underline-offset-2 hover:text-emerald-200"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {topWinner.trader}
+                    </a>
+                  </span>
+                  <span>
+                    {isZh ? "净利润" : "Net PNL"}: {formatCurrency(getPnl(topWinner))}
+                  </span>
+                  <span>
+                    {isZh ? "成交量" : "Volume"}: {formatCurrency(topWinner.vol ?? 0)}
+                  </span>
+                </div>
+              </div>
+            ) : null}
+            <ul className="mt-5 flex flex-col gap-3">
+              {restTopByPnl.map((row) => (
+                <li
+                  key={row.trader}
+                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-slate-200"
+                >
+                  <div className="flex flex-col">
+                    <span className="font-mono text-xs text-slate-400">
+                      #{row.rank} · {" "}
+                      <a
+                        href={getDebankProfileUrl(row.trader)}
+                        className="underline decoration-slate-400/60 underline-offset-2 hover:text-slate-50"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {row.trader}
+                      </a>
+                    </span>
+                    <span className="text-sm text-slate-50">
+                      {isZh ? "净利润" : "Net PNL"}: {formatCurrency(getPnl(row))}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs uppercase tracking-[0.25em] text-emerald-200/80">
+                      {isZh ? "成交量" : "Volume"}
+                    </div>
+                    <div className="text-base font-semibold text-emerald-200">
                       {formatCurrency(row.vol ?? 0)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
@@ -388,24 +468,57 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
                   : "Consistently positive wallets support the higher win narrative"}
               </div>
             </header>
+            {topRoiLeader ? (
+              <div className="mt-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+                <div className="text-xs uppercase tracking-[0.35em] text-emerald-200/90">
+                  {isZh ? "ROI 冠军" : "Top ROI streak"}
+                </div>
+                <div className="mt-2 flex flex-col gap-1 font-mono text-xs text-emerald-50">
+                  <span>
+                    {isZh ? "地址" : "Address"}: {" "}
+                    <a
+                      href={getDebankProfileUrl(topRoiLeader.trader)}
+                      className="underline decoration-emerald-200/60 underline-offset-2 hover:text-emerald-200"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {topRoiLeader.trader}
+                    </a>
+                  </span>
+                  <span>
+                    ROI: {formatPercent((topRoiLeader.roi ?? 0) / 100, 1)}
+                  </span>
+                  <span>
+                    {isZh ? "成交量" : "Volume"}: {formatCurrency(topRoiLeader.vol ?? 0)}
+                  </span>
+                </div>
+              </div>
+            ) : null}
             <ul className="mt-4 flex flex-col gap-3">
-              {topByRoi.map((row, index) => (
+              {restTopByRoi.map((row) => (
                 <li
-                  key={`${row.trader}-${index}`}
+                  key={row.trader}
                   className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-slate-200"
                 >
                   <div className="flex flex-col">
                     <span className="font-mono text-xs text-slate-400">
-                      #{row.rank} · {shortenAddress(row.trader)}
+                      #{row.rank} · {" "}
+                      <a
+                        href={getDebankProfileUrl(row.trader)}
+                        className="underline decoration-slate-400/60 underline-offset-2 hover:text-slate-50"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {row.trader}
+                      </a>
                     </span>
                     <span className="text-sm text-slate-50">
-                      {isZh ? "ROI " : "ROI "}
-                      {formatPercent((row.roi ?? 0) / 100, 1)}
+                      ROI: {formatPercent((row.roi ?? 0) / 100, 1)}
                     </span>
                   </div>
                   <div className="text-right">
                     <div className="text-xs uppercase tracking-[0.25em] text-emerald-200/80">
-                      {isZh ? "加权成交额" : "Weighted impact"}
+                      {isZh ? "成交量" : "Volume"}
                     </div>
                     <div className="text-base font-semibold text-emerald-200">
                       {formatCurrency(row.vol ?? 0)}

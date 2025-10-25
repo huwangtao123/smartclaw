@@ -27,12 +27,12 @@ function computeMetrics(traders: Trader[]): DashboardMetrics {
   const topByPnl = winners
     .slice()
     .sort((a, b) => pnlValue(b) - pnlValue(a))
-    .slice(0, 6);
+    .slice(0, 10);
 
   const topByRoi = traders
     .slice()
     .sort((a, b) => (b.roi ?? Number.NEGATIVE_INFINITY) - (a.roi ?? Number.NEGATIVE_INFINITY))
-    .slice(0, 6);
+    .slice(0, 10);
 
   const avgRoi = totalTraders
     ? traders.reduce((acc, row) => acc + (row.roi ?? 0), 0) / totalTraders
