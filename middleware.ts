@@ -14,6 +14,12 @@ const facilitatorEnv = process.env.NEXT_PUBLIC_FACILITATOR_URL;
 const cdpKeyId = process.env.CDP_API_KEY_ID;
 const cdpKeySecret = process.env.CDP_API_KEY_SECRET;
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+const premiumResource = siteUrl
+  ? (`${siteUrl}/premium` as Resource)
+  : undefined;
+const premiumApiResource = siteUrl
+  ? (`${siteUrl}/api/premium` as Resource)
+  : undefined;
 
 const facilitatorUrl =
   facilitatorEnv !== undefined
@@ -40,7 +46,7 @@ const routes: RoutesConfig = {
     network: rawNetwork,
     config: {
       description: "Access AliDashboard premium leaderboard insights",
-      resource: siteUrl ? `${siteUrl}/premium` : undefined,
+      resource: premiumResource,
     },
   },
   "/api/premium": {
@@ -50,7 +56,7 @@ const routes: RoutesConfig = {
       description: "Access AliDashboard premium leaderboard API",
       mimeType: "application/json",
       discoverable: false,
-      resource: siteUrl ? `${siteUrl}/api/premium` : undefined,
+      resource: premiumApiResource,
     },
   },
 } as const;
