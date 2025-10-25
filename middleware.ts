@@ -92,7 +92,17 @@ const configuredMiddleware =
           },
         );
 
-export const middleware = configuredMiddleware;
+export async function middleware(request: NextRequest) {
+  const isPrefetch =
+    request.headers.get("x-middleware-prefetch") === "1" ||
+    request.headers.get("purpose") === "prefetch";
+
+  if (isPrefetch || request.method === "HEAD" || request.method === "OPTIONS") {
+    return NextResponse.next();
+  }
+
+  return configuredMiddleware(request);
+}
 
 export const config = {
   matcher: ["/premium/:path*", "/api/premium/:path*"],
