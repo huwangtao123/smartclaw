@@ -85,16 +85,21 @@ async function refreshLeaderboardData() {
   const rows = extractRows(payload);
 
   if (!rows.length) {
-    console.warn("[dashboardAPI] Response contained no rows – skipping file refresh");
+    console.warn(
+      "[dashboardAPI] Response contained no rows – skipping file refresh",
+    );
     return;
   }
 
   const processed = rows
-    .filter((row): row is Record<string, unknown> => !!row && typeof row === "object")
+    .filter(
+      (row): row is Record<string, unknown> => !!row && typeof row === "object",
+    )
     .map(normalizeRow);
 
-  const filtered = processed.filter((entry) =>
-    typeof entry.volClean === "number" && entry.volClean > MIN_VOLUME,
+  const filtered = processed.filter(
+    (entry) =>
+      typeof entry.volClean === "number" && entry.volClean > MIN_VOLUME,
   );
 
   const missingVol = processed.filter(
@@ -191,9 +196,7 @@ function parseNumeric(value: unknown): number | undefined {
     const trimmed = value.trim();
     if (!trimmed) return undefined;
 
-    const cleaned = trimmed
-      .replace(/,/g, "")
-      .replace(/[^0-9+\-eE\.]/g, "");
+    const cleaned = trimmed.replace(/,/g, "").replace(/[^0-9+\-eE.]/g, "");
 
     if (!cleaned) return undefined;
 
@@ -261,7 +264,9 @@ function buildCsv(
   }
 
   for (const row of rows) {
-    Object.keys(row).forEach((key) => headerSet.add(key));
+    for (const key of Object.keys(row)) {
+      headerSet.add(key);
+    }
   }
 
   const headers = sortHeaders(Array.from(headerSet), preferredOrder);

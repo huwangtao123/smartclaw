@@ -1,14 +1,20 @@
+import { NextResponse } from "next/server";
+
 import { loadFilteredTraders } from "@/lib/data";
 import { computeMetrics } from "@/lib/metrics";
 import { updateDashboardData } from "@/lib/updateData";
-import Dashboard from "./components/dashboard";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+export async function GET() {
   await updateDashboardData();
   const traders = await loadFilteredTraders();
   const metrics = computeMetrics(traders);
 
-  return <Dashboard metrics={metrics} />;
+  return NextResponse.json({
+    x402Version: 1,
+    topByPnl: metrics.topByPnl,
+    topByRoi: metrics.topByRoi,
+    generatedAt: new Date().toISOString(),
+  });
 }

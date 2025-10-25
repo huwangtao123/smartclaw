@@ -57,13 +57,15 @@ const openApiDocument = {
                         },
                         total: {
                           type: "integer",
-                          description: "Total number of wallets in the source snapshot.",
+                          description:
+                            "Total number of wallets in the source snapshot.",
                           example: 1327,
                         },
                         generatedAt: {
                           type: "string",
                           format: "date-time",
-                          description: "Server timestamp when the response was generated.",
+                          description:
+                            "Server timestamp when the response was generated.",
                         },
                       },
                       required: ["limit", "total", "generatedAt"],
