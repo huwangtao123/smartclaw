@@ -99,7 +99,7 @@ export default async function PremiumPage() {
             <div className="relative aspect-[16/9] w-full">
               <video
                 className="h-full w-full object-cover"
-                src="https://cdn.your-domain.com/media/girl.mp4"
+                src="/media/girl.mp4"
                 autoPlay
                 loop
                 muted
