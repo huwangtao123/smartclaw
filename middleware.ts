@@ -117,6 +117,7 @@ export async function middleware(request: NextRequest) {
       const baseUrl = siteUrl ?? `${forwardedProto}://${forwardedHost}`;
       const computedResource =
         `${baseUrl}${request.nextUrl.pathname}` as Resource;
+      console.info("[middleware] original accepts", payload?.accepts);
       const updated = {
         ...payload,
         accepts: Array.isArray(payload?.accepts)
@@ -133,12 +134,44 @@ export async function middleware(request: NextRequest) {
 
       const headers = new Headers(response.headers);
       headers.set("content-type", "application/json");
+      console.info("[middleware] rewritten resource", computedResource);
       return new NextResponse(JSON.stringify(updated), {
         status: response.status,
         headers,
       });
     } catch (error) {
       console.error("[middleware] Unable to normalize resource URL", error);
+    }
+  }
+
+  if (
+    response.status === 402 &&
+    response.headers.get("content-type")?.includes("text/html")
+  ) {
+    const forwardedHost =
+      request.headers.get("x-forwarded-host") ?? request.nextUrl.host;
+    const forwardedProto =
+      request.headers.get("x-forwarded-proto") ??
+      request.nextUrl.protocol.replace(":", "");
+    const baseUrl = siteUrl ?? `${forwardedProto}://${forwardedHost}`;
+    const currentPath = request.nextUrl.pathname;
+    const normalizedResource = `${baseUrl}${currentPath}`;
+
+    try {
+      const html = await response.clone().text();
+      const updatedHtml = html
+        .replace(/currentUrl:\s*"[^"]*"/, `currentUrl: "${normalizedResource}"`)
+        .replace(/"resource":"[^"]+"/g, `"resource":"${normalizedResource}"`);
+
+      const headers = new Headers(response.headers);
+      headers.set("content-type", "text/html; charset=utf-8");
+      console.info("[middleware] rewritten html resource", normalizedResource);
+      return new NextResponse(updatedHtml, {
+        status: response.status,
+        headers,
+      });
+    } catch (error) {
+      console.error("[middleware] Unable to rewrite paywall HTML", error);
     }
   }
 
