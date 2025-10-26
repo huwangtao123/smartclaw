@@ -101,7 +101,48 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  return configuredMiddleware(request);
+  const response = await configuredMiddleware(request);
+
+  if (
+    response.status === 402 &&
+    response.headers.get("content-type")?.includes("application/json")
+  ) {
+    try {
+      const payload = await response.clone().json();
+      const forwardedHost =
+        request.headers.get("x-forwarded-host") ?? request.nextUrl.host;
+      const forwardedProto =
+        request.headers.get("x-forwarded-proto") ??
+        request.nextUrl.protocol.replace(":", "");
+      const baseUrl = siteUrl ?? `${forwardedProto}://${forwardedHost}`;
+      const computedResource =
+        `${baseUrl}${request.nextUrl.pathname}` as Resource;
+      const updated = {
+        ...payload,
+        accepts: Array.isArray(payload?.accepts)
+          ? payload.accepts.map((item: Record<string, unknown>) =>
+              item && typeof item === "object"
+                ? {
+                    ...item,
+                    resource: computedResource,
+                  }
+                : item,
+            )
+          : payload?.accepts,
+      };
+
+      const headers = new Headers(response.headers);
+      headers.set("content-type", "application/json");
+      return new NextResponse(JSON.stringify(updated), {
+        status: response.status,
+        headers,
+      });
+    } catch (error) {
+      console.error("[middleware] Unable to normalize resource URL", error);
+    }
+  }
+
+  return response;
 }
 
 export const config = {
