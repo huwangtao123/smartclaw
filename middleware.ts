@@ -105,7 +105,15 @@ export async function middleware(request: NextRequest) {
   try {
     response = await configuredMiddleware(request);
   } catch (error) {
-    console.error("[middleware] paymentMiddleware failed, bypassing", error);
+    const message =
+      error instanceof Error ? error.message : String(error ?? "Unknown error");
+    if (message.toLowerCase().includes("too many requests")) {
+      console.warn(
+        "[middleware] payment middleware throttled (429). Bypassing paywall for this request.",
+      );
+    } else {
+      console.error("[middleware] paymentMiddleware failed, bypassing", error);
+    }
     return NextResponse.next();
   }
 
