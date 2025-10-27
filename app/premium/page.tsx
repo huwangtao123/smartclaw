@@ -69,10 +69,10 @@ export default async function PremiumPage() {
         data: recent,
       };
     })
-    .filter(
-      (series): series is VolumeSlice =>
-        Boolean(series) && series.data.length > 0,
-    );
+    .filter((series): series is VolumeSlice => {
+      if (!series) return false;
+      return series.data.length > 0;
+    });
   const lastVolumeTimestamp = volumeSnapshot?.lastTimestamp ?? null;
 
   const lastVolumeEntryLabel = lastVolumeTimestamp
