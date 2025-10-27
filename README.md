@@ -26,3 +26,12 @@ The site exposes an OpenAPI-compliant endpoint so you can pull the latest high-p
 - `GET /api/openapi` – serves the OpenAPI 3.1 document describing the available endpoints.
 
 Every API request triggers a data refresh via `dashboardAPI.py`, so responses always reflect the newest snapshot saved to `fx_leaderboard_filtered.csv`.
+
+## Premium Access Configuration
+
+Premium paywall sessions last for 72 hours by default. You can tweak this behaviour through the following environment variables:
+
+- `PREMIUM_ACCESS_DURATION_HOURS` – positive integer that sets how long premium content stays unlocked after a successful payment; defaults to `72`.
+- `PREMIUM_ACCESS_SECRET` – required secret used to sign the premium-access cookie; rotate if compromised.
+
+Both `/premium` and `/api/premium` honor this window. Update your environment and restart the app after changing either value.
