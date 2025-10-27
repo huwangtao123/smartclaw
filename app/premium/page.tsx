@@ -1,6 +1,8 @@
 import Link from "next/link";
 
+import { FxVolumeChart } from "@/app/components/FxVolumeChart";
 import { loadFilteredTraders } from "@/lib/data";
+import { type DailyVolumeRecord, fetchFxVolumeSnapshot } from "@/lib/fxVolume";
 import { computeMetrics } from "@/lib/metrics";
 import { updateDashboardData } from "@/lib/updateData";
 
@@ -34,6 +36,15 @@ export default async function PremiumPage() {
   await updateDashboardData();
   const traders = await loadFilteredTraders();
   const metrics = computeMetrics(traders);
+  let volumeSnapshot: Awaited<ReturnType<typeof fetchFxVolumeSnapshot>> | null =
+    null;
+
+  try {
+    volumeSnapshot = await fetchFxVolumeSnapshot();
+  } catch (error) {
+    console.error("Failed to load FX volume snapshot", error);
+  }
+
   const totalTopPnl = metrics.topByPnl.reduce(
     (acc, row) => acc + (row.pnlClean ?? row.pnl ?? 0),
     0,
@@ -42,23 +53,58 @@ export default async function PremiumPage() {
     metrics.topByRoi.reduce((acc, row) => acc + (row.roi ?? 0), 0) /
     (metrics.topByRoi.length || 1);
 
+  const preferredTokens = ["wstETH", "wBTC"];
+  const volumeSnapshotLookup = new Map(
+    volumeSnapshot?.tokens.map((series) => [series.token, series]) ?? [],
+  );
+  const daysToDisplay = 30;
+  type VolumeSlice = { token: string; data: DailyVolumeRecord[] };
+  const activeVolumeSeries: VolumeSlice[] = preferredTokens
+    .map((token) => {
+      const series = volumeSnapshotLookup.get(token);
+      if (!series || series.data.length === 0) return null;
+      const recent = series.data.slice(-daysToDisplay);
+      return {
+        token,
+        data: recent,
+      };
+    })
+    .filter(
+      (series): series is VolumeSlice =>
+        Boolean(series) && series.data.length > 0,
+    );
+  const lastVolumeTimestamp = volumeSnapshot?.lastTimestamp ?? null;
+
+  const lastVolumeEntryLabel = lastVolumeTimestamp
+    ? new Intl.DateTimeFormat("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+        timeZone: "UTC",
+      }).format(new Date(lastVolumeTimestamp))
+    : null;
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-14">
         <header className="overflow-hidden rounded-4xl border border-emerald-400/30 bg-gradient-to-br from-emerald-600/40 via-slate-900/70 to-slate-950/90 p-8 shadow-[0_0_120px_-40px_rgba(16,185,129,0.6)] sm:p-12">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-400/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-emerald-100/90">
-                x402 Unlock · $1 USDC
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-400/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-emerald-100/90">
+                x402 Unlock · $1 Unlocks Top 10 PNL · ROI · Volume
               </div>
               <h1 className="mt-6 text-4xl font-semibold tracking-tight text-emerald-50 sm:text-5xl">
                 Premium Leaderboard Intelligence
               </h1>
               <p className="mt-4 text-sm text-emerald-50/80 sm:text-base">
-                You just unlocked the full depth of the f(x) leaderboard.
-                Explore the complete top 10 PNL and ROI wallets, dissect their
-                capital deployment, and overlay conviction metrics to predict
-                the next rotation.
+                Your $1 unlock delivers the complete top 10 PNL and ROI roster
+                plus live transaction volume diagrams, letting you dissect
+                capital deployment and directional conviction before the next
+                rotation.
               </p>
             </div>
             <div className="grid w-full max-w-sm gap-4 rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-emerald-50">
@@ -128,8 +174,8 @@ export default async function PremiumPage() {
           <div className="mt-10 flex flex-col gap-4 text-xs text-emerald-100/70 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <span className="font-semibold text-emerald-200">Included:</span>{" "}
-              full top 10 by PNL and ROI, trade volume + net capture, momentum
-              overlays, DeBank deep links.
+              top 10 PNL and ROI intel, transaction volume diagrams, trade
+              capture momentum overlays, DeBank deep links.
             </div>
             <Link
               href="/"
@@ -139,6 +185,36 @@ export default async function PremiumPage() {
             </Link>
           </div>
         </header>
+
+        {activeVolumeSeries.length > 0 ? (
+          <section className="rounded-4xl border border-emerald-400/30 bg-gradient-to-tr from-emerald-500/20 via-slate-900/70 to-slate-950/90 p-8 shadow-[0_0_120px_-60px_rgba(16,185,129,0.6)] sm:p-12">
+            <header className="flex flex-col gap-2 text-emerald-100 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight text-emerald-50 sm:text-3xl">
+                  FX Protocol Transaction Volume
+                </h2>
+                <p className="text-sm text-emerald-100/80">
+                  Last 30 days · Data refreshes every 6 hours.
+                </p>
+              </div>
+              {lastVolumeEntryLabel ? (
+                <p className="text-xs uppercase tracking-[0.3em] text-emerald-200/80">
+                  Last data entry: {lastVolumeEntryLabel}
+                </p>
+              ) : null}
+            </header>
+            <div className="mt-8 grid gap-10">
+              {activeVolumeSeries.map(({ token, data }) => (
+                <FxVolumeChart
+                  key={token}
+                  token={token}
+                  data={data}
+                  subtitle="Last 30 Days · UTC"
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="grid gap-8 lg:grid-cols-2">
           <div className="rounded-3xl border border-emerald-400/30 bg-gradient-to-br from-emerald-500/20 via-slate-900/60 to-slate-950/80 p-6">

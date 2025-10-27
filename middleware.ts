@@ -101,7 +101,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const response = await configuredMiddleware(request);
+  let response: NextResponse;
+  try {
+    response = await configuredMiddleware(request);
+  } catch (error) {
+    console.error("[middleware] paymentMiddleware failed, bypassing", error);
+    return NextResponse.next();
+  }
 
   if (
     response.status === 402 &&
