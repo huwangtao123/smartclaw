@@ -139,6 +139,20 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
         <LanguageToggle language={language} onChange={setLanguage} />
+        <div className="flex items-center gap-3 text-xs text-slate-300">
+          <Link
+            href="/"
+            className="rounded-full border border-slate-700 px-3 py-1 hover:border-emerald-300/60 hover:text-emerald-200"
+          >
+            {isZh ? "主页" : "Home"}
+          </Link>
+          <Link
+            href="/fxmint"
+            className="rounded-full border border-emerald-400/30 px-3 py-1 text-emerald-200 hover:border-emerald-300 hover:text-emerald-100"
+          >
+            FXMint
+          </Link>
+        </div>
 
         <header className="flex flex-col gap-3">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
