@@ -7,7 +7,9 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "prepare-data": "python scripts/generate_lending_protocol_rates.py && python scripts/generate_fxUSD_rates.py --reference lending_rates.csv --output lending_rates.csv",
+    "build-with-data": "npm run prepare-data && npm run build"
   },
   "dependencies": {
     "@visx/axis": "^3.12.0",
