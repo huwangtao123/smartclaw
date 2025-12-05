@@ -274,6 +274,10 @@ export async function loadRates(options?: {
   const fallbackFile = options?.fallbackFile ?? DEFAULT_FALLBACK_FILE;
   let primaryError: string | undefined;
 
+  const fallback = await loadFallbackFromFile(fallbackFile, maWindow);
+  if (fallback && fallback.series.length > 0) return fallback;
+
+  // Only try primary API if no CSV is available.
   try {
     const primary = await fetchPrimary(maWindow);
     if (!isStale(primary.lastUpdated)) {
@@ -283,14 +287,6 @@ export async function loadRates(options?: {
   } catch (error) {
     primaryError =
       error instanceof Error ? error.message : "Primary rate fetch failed";
-  }
-
-  const fallback = await loadFallbackFromFile(fallbackFile, maWindow);
-  if (fallback && fallback.series.length > 0) {
-    return {
-      ...fallback,
-      error: primaryError,
-    };
   }
 
   return {
