@@ -29,6 +29,8 @@ const COLORS = {
   aaveMa: "#2563eb",
   crv: "#34d399",
   crvMa: "#059669",
+  fx: "#f97316",
+  fxMa: "#ea580c",
   grid: "rgba(148,163,184,0.25)",
 };
 
@@ -39,8 +41,10 @@ type ChartPoint = {
   date: Date;
   aave: number | null;
   crv: number | null;
+  fx: number | null;
   aaveMa?: number;
   crvMa?: number;
+  fxMa?: number;
 };
 
 type HoverDatum = {
@@ -114,6 +118,7 @@ export function InterestRateChartVisx({
   const [rangeId, setRangeId] = useState<string>(selectedRangeId);
   const [showAave, setShowAave] = useState(true);
   const [showCrv, setShowCrv] = useState(true);
+  const [showFx, setShowFx] = useState(true);
   const [showMa, setShowMa] = useState(false);
   const locale = language === "zh" ? "zh-CN" : "en-US";
 
@@ -123,8 +128,10 @@ export function InterestRateChartVisx({
         date: new Date(`${point.date}T00:00:00Z`),
         aave: point.aaveBorrow ?? null,
         crv: point.crvusdAvg ?? null,
+        fx: point.fxusdBorrow ?? null,
         aaveMa: point.aaveMa,
         crvMa: point.crvusdMa,
+        fxMa: point.fxusdMa,
       }))
       .sort((a, b) => a.date.getTime() - b.date.getTime());
     return mapped;
@@ -161,8 +168,10 @@ export function InterestRateChartVisx({
     const candidates = [
       showAave ? point.aave : null,
       showCrv ? point.crv : null,
+      showFx ? point.fx : null,
       showMa && showAave ? point.aaveMa : null,
       showMa && showCrv ? point.crvMa : null,
+      showMa && showFx ? point.fxMa : null,
     ].filter((v) => v !== null && v !== undefined) as number[];
     const localMax = candidates.length ? Math.max(...candidates) : 0;
     return Math.max(acc, localMax);
@@ -184,10 +193,12 @@ export function InterestRateChartVisx({
     const firstVisible =
       (showAave && point.aave !== null ? point.aave : null) ??
       (showCrv && point.crv !== null ? point.crv : null) ??
+      (showFx && point.fx !== null ? point.fx : null) ??
       (showMa && showAave && point.aaveMa !== undefined
         ? point.aaveMa
         : null) ??
       (showMa && showCrv && point.crvMa !== undefined ? point.crvMa : null) ??
+      (showMa && showFx && point.fxMa !== undefined ? point.fxMa : null) ??
       0;
     showTooltip({
       tooltipData: { point, index: idx },
@@ -223,6 +234,21 @@ export function InterestRateChartVisx({
           ))}
         </div>
         <div className="flex flex-wrap gap-2">
+          <label className="flex cursor-pointer items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-500/10 px-3 py-1">
+            <input
+              type="checkbox"
+              checked={showFx}
+              onChange={(e) => setShowFx(e.target.checked)}
+              className="accent-emerald-400"
+            />
+            <span className="flex items-center gap-1">
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ background: COLORS.fx }}
+              />
+              {language === "zh" ? "fxUSD" : "fxUSD"}
+            </span>
+          </label>
           <label className="flex cursor-pointer items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-500/10 px-3 py-1">
             <input
               type="checkbox"
@@ -276,8 +302,8 @@ export function InterestRateChartVisx({
           role="img"
           aria-label={
             language === "zh"
-              ? "Aave USDC 与 crvUSD(WBTC) 利率对比"
-              : "Aave USDC vs crvUSD(WBTC) rate comparison"
+              ? "fxUSD、Aave USDC 与 crvUSD(WBTC) 利率对比"
+              : "fxUSD, Aave USDC, and crvUSD(WBTC) rate comparison"
           }
           onMouseMove={handlePointerMove}
           onMouseLeave={handlePointerLeave}
@@ -336,7 +362,17 @@ export function InterestRateChartVisx({
               data={filtered.filter((p) => p.crv !== null)}
               x={(d) => xScale(d.date)}
               y={(d) => yScale(d.crv ?? 0)}
-              stroke={COLORS.crv}
+            stroke={COLORS.crv}
+            strokeWidth={2}
+            curve={undefined}
+          />
+        ) : null}
+          {showFx ? (
+            <LinePath
+              data={filtered.filter((p) => p.fx !== null)}
+              x={(d) => xScale(d.date)}
+              y={(d) => yScale(d.fx ?? 0)}
+              stroke={COLORS.fx}
               strokeWidth={2}
               curve={undefined}
             />
@@ -363,6 +399,16 @@ export function InterestRateChartVisx({
               strokeDasharray="6 4"
             />
           ) : null}
+          {showMa && showFx ? (
+            <LinePath
+              data={filtered.filter((p) => p.fxMa !== undefined)}
+              x={(d) => xScale(d.date)}
+              y={(d) => yScale(d.fxMa ?? 0)}
+              stroke={COLORS.fxMa}
+              strokeWidth={2}
+              strokeDasharray="6 4"
+            />
+          ) : null}
         </svg>
 
         {tooltipData ? (
@@ -375,6 +421,15 @@ export function InterestRateChartVisx({
               {formatDate(tooltipData.point.date, locale)}
             </div>
             <div className="mt-1 space-y-1">
+              {showFx ? (
+                <div className="flex items-center gap-2">
+                  <span
+                    className="inline-block h-2 w-2 rounded-full"
+                    style={{ backgroundColor: COLORS.fx }}
+                  />
+                  fxUSD: {formatPercent(tooltipData.point.fx)}
+                </div>
+              ) : null}
               {showAave ? (
                 <div className="flex items-center gap-2">
                   <span
@@ -391,6 +446,18 @@ export function InterestRateChartVisx({
                     style={{ backgroundColor: COLORS.crv }}
                   />
                   crvUSD(WBTC): {formatPercent(tooltipData.point.crv)}
+                </div>
+              ) : null}
+              {showMa && showFx ? (
+                <div className="flex items-center gap-2 text-slate-300">
+                  <span
+                    className="inline-block h-2 w-2 rounded-full"
+                    style={{ backgroundColor: COLORS.fxMa }}
+                  />
+                  MA fxUSD:{" "}
+                  {tooltipData.point.fxMa !== undefined
+                    ? formatPercent(tooltipData.point.fxMa ?? null)
+                    : "—"}
                 </div>
               ) : null}
               {showMa && showAave ? (

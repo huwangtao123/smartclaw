@@ -110,35 +110,41 @@ export function RatesClient({ data }: { data: RateSeries }) {
   const averageCard = useMemo(() => {
     if (!hasData || filteredSeries.length === 0) return null;
     const denom = filteredSeries.length || 1;
+    const fxAvg =
+      filteredSeries.reduce((acc, point) => acc + (point.fxusdBorrow ?? 0), 0) /
+      denom;
     const aaveAvg =
       filteredSeries.reduce((acc, point) => acc + (point.aaveBorrow ?? 0), 0) /
       denom;
     const crvAvg =
       filteredSeries.reduce((acc, point) => acc + (point.crvusdAvg ?? 0), 0) /
       denom;
-    return { aaveAvg, crvAvg };
+    return { fxAvg, aaveAvg, crvAvg };
   }, [filteredSeries, hasData]);
 
   const tableRows = useMemo(() => {
     if (!hasData) return [];
     return filteredSeries.map((point) => {
-      const parts = [
-        `Aave: ${formatPercent(point.aaveBorrow)}`,
-        `crvUSD(WBTC): ${formatPercent(point.crvusdAvg)}`,
+      const primaryParts = [
+        {
+          label: "fxUSD",
+          value: formatPercent(point.fxusdBorrow),
+          highlight: true,
+        },
+        {
+          label: "Aave",
+          value: formatPercent(point.aaveBorrow),
+        },
+        {
+          label: "crvUSD(WBTC)",
+          value: formatPercent(point.crvusdAvg),
+        },
       ];
-      if (point.aaveMa !== undefined || point.crvusdMa !== undefined) {
-        parts.push(
-          `MA Aave(${data.maWindow}d): ${formatPercent(point.aaveMa ?? null)}`,
-        );
-        parts.push(
-          `MA crvUSD(${data.maWindow}d): ${formatPercent(point.crvusdMa ?? null)}`,
-        );
-      }
       return {
         date: point.date,
         protocol: "Daily",
         kind: "snapshot",
-        apy: parts.join(" | "),
+        parts: primaryParts,
       };
     });
   }, [data.maWindow, filteredSeries, hasData]);
@@ -158,9 +164,7 @@ export function RatesClient({ data }: { data: RateSeries }) {
           <LanguageToggle language={language} onChange={setLanguage} />
           <div className="flex items-center gap-3 text-xs text-slate-300">
             <span className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-emerald-100">
-              {isZh
-                ? "数据每日更新（≤24 小时）"
-                : "Data refreshed daily (≤24h latency)"}
+              {isZh ? "离线数据已加载" : "Offline data loaded"}
             </span>
             <span className="rounded-full border border-slate-300/30 bg-slate-800/80 px-3 py-1 text-slate-100">
               {isZh
@@ -185,17 +189,19 @@ export function RatesClient({ data }: { data: RateSeries }) {
               {isZh ? "借贷利率对比" : "Lending Rate Comparison"}
             </div>
             <h1 className="mt-2 text-4xl font-semibold text-slate-50 sm:text-5xl">
-              {isZh ? "Aave USDC vs crvUSD(WBTC)" : "Aave USDC vs crvUSD(WBTC)"}
+              {isZh
+                ? "fxUSD vs Aave USDC vs crvUSD(WBTC)"
+                : "fxUSD vs Aave USDC vs crvUSD(WBTC)"}
             </h1>
             <p className="mt-3 max-w-3xl text-sm text-slate-300 sm:text-base">
               {isZh
-                ? "对比 Aave USDC 借款利率与 crvUSD(WBTC) 的平均利率，支持原始曲线与移动均线，便于观察趋势与偏离。"
-                : "Compare Aave USDC borrow APY against crvUSD(WBTC) averages with raw curves and moving averages to spot trends and deviations."}
+                ? "对比 fxUSD、Aave USDC、crvUSD(WBTC) 借款利率，支持原始曲线与移动均线，便于观察趋势与偏离。"
+                : "Compare fxUSD, Aave USDC, and crvUSD(WBTC) borrow APR with raw curves and moving averages to spot trends and deviations."}
             </p>
             <p className="mt-1 text-xs text-slate-400">
               {isZh
-                ? "可接受一天的延迟，自动在 DefiLlama/Curve API 与离线 CSV 之间切换。"
-                : "Up to 1-day latency; automatically switches between DefiLlama/Curve APIs and offline CSV snapshots."}
+                ? "默认使用离线 CSV 数据，如在线源可用则自动刷新。"
+                : "Uses offline CSV snapshots by default, refreshing from live sources when available."}
             </p>
           </div>
         </header>
@@ -208,6 +214,9 @@ export function RatesClient({ data }: { data: RateSeries }) {
               </span>
               {averageCard ? (
                 <>
+                  <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs text-emerald-50">
+                    {isZh ? "fxUSD" : "fxUSD"} · {averageCard.fxAvg.toFixed(3)}%
+                  </span>
                   <span className="rounded-full bg-slate-900/80 px-3 py-1 text-xs">
                     {isZh ? "Aave USDC" : "Aave USDC"} ·{" "}
                     {averageCard.aaveAvg.toFixed(3)}%
@@ -262,7 +271,7 @@ export function RatesClient({ data }: { data: RateSeries }) {
                         kind
                       </th>
                       <th className="px-4 py-2 font-semibold uppercase tracking-[0.2em] text-slate-400">
-                        apy
+                        apr
                       </th>
                     </tr>
                   </thead>
@@ -277,7 +286,22 @@ export function RatesClient({ data }: { data: RateSeries }) {
                           {row.protocol}
                         </td>
                         <td className="px-4 py-2 text-slate-300">{row.kind}</td>
-                        <td className="px-4 py-2 text-slate-100">{row.apy}</td>
+                        <td className="px-4 py-2 text-slate-100">
+                          <div className="flex flex-wrap gap-2">
+                            {row.parts.map((part) => (
+                              <span
+                                key={`${row.date}-${part.label}`}
+                                className={`rounded-full px-2 py-1 ${
+                                  part.highlight
+                                    ? "bg-emerald-500/20 text-emerald-50"
+                                    : "bg-slate-800/70 text-slate-200"
+                                }`}
+                              >
+                                {part.label}: {part.value}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

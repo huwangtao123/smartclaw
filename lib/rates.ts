@@ -11,8 +11,10 @@ export type RatePoint = {
   date: string;
   aaveBorrow: number | null;
   crvusdAvg: number | null;
+  fxusdBorrow: number | null;
   aaveMa?: number;
   crvusdMa?: number;
+  fxusdMa?: number;
 };
 
 export type RateSource = "primary" | "fallback";
@@ -112,9 +114,16 @@ function normaliseCsvContent(content: string): SeriesMap[] {
   const dateIdx = findIdx("date", "timestamp", "time");
   const aaveIdx = findIdx("aaveborrow", "aave_borrow_apr_pct", "aave_apr");
   const crvIdx = findIdx("crvusdavg", "crvusd_borrow_apr_pct", "crvusd_apr");
+  const fxusdIdx = findIdx(
+    "fxusdborrow",
+    "fxusd_borrow_apr_pct",
+    "fxusd_apr",
+    "fxusd_borrow_rate",
+  );
 
   const aaveMap: SeriesMap = new Map();
   const crvMap: SeriesMap = new Map();
+  const fxusdMap: SeriesMap = new Map();
 
   for (const line of lines.slice(1)) {
     const cells = line.split(",");
@@ -128,21 +137,32 @@ function normaliseCsvContent(content: string): SeriesMap[] {
     const crvRaw = pick(crvIdx);
     const aave = Number(aaveRaw);
     const crv = Number(crvRaw);
+    const fxusd = Number(fxusdIdx >= 0 ? pick(fxusdIdx) : "");
     if (Number.isFinite(aave)) aaveMap.set(dateKey, aave);
     if (Number.isFinite(crv)) crvMap.set(dateKey, crv);
+    if (Number.isFinite(fxusd)) fxusdMap.set(dateKey, fxusd);
   }
 
-  return [aaveMap, crvMap];
+  return [aaveMap, crvMap, fxusdMap];
 }
 
-function mergeSeries(aave: SeriesMap, crvusd: SeriesMap): RatePoint[] {
-  const dates = new Set<string>([...aave.keys(), ...crvusd.keys()]);
+function mergeSeries(
+  aave: SeriesMap,
+  crvusd: SeriesMap,
+  fxusd: SeriesMap,
+): RatePoint[] {
+  const dates = new Set<string>([
+    ...aave.keys(),
+    ...crvusd.keys(),
+    ...fxusd.keys(),
+  ]);
   const sorted = [...dates].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 
   return sorted.map((date) => ({
     date,
     aaveBorrow: aave.get(date) ?? null,
     crvusdAvg: crvusd.get(date) ?? null,
+    fxusdBorrow: fxusd.get(date) ?? null,
   }));
 }
 
@@ -153,6 +173,7 @@ function computeMovingAverage(
   if (window <= 1) return [...series];
   const aaveBuffer: number[] = [];
   const crvBuffer: number[] = [];
+  const fxusdBuffer: number[] = [];
   const next: RatePoint[] = [];
 
   for (const point of series) {
@@ -164,12 +185,18 @@ function computeMovingAverage(
       point.crvusdAvg !== null && Number.isFinite(point.crvusdAvg)
         ? point.crvusdAvg
         : null;
+    const fxusdVal =
+      point.fxusdBorrow !== null && Number.isFinite(point.fxusdBorrow)
+        ? point.fxusdBorrow
+        : null;
 
     if (aaveVal !== null) aaveBuffer.push(aaveVal);
     if (crvVal !== null) crvBuffer.push(crvVal);
+    if (fxusdVal !== null) fxusdBuffer.push(fxusdVal);
 
     if (aaveBuffer.length > window) aaveBuffer.shift();
     if (crvBuffer.length > window) crvBuffer.shift();
+    if (fxusdBuffer.length > window) fxusdBuffer.shift();
 
     const clone: RatePoint = { ...point };
     if (aaveBuffer.length === window) {
@@ -179,6 +206,10 @@ function computeMovingAverage(
     if (crvBuffer.length === window) {
       const sum = crvBuffer.reduce((acc, val) => acc + val, 0);
       clone.crvusdMa = sum / window;
+    }
+    if (fxusdBuffer.length === window) {
+      const sum = fxusdBuffer.reduce((acc, val) => acc + val, 0);
+      clone.fxusdMa = sum / window;
     }
     next.push(clone);
   }
@@ -217,7 +248,7 @@ async function fetchPrimary(maWindow: number): Promise<RateSeries> {
 
   const aaveSeries = normaliseRemoteSeries(aavePayload);
   const crvSeries = normaliseRemoteSeries(crvPayload);
-  const merged = mergeSeries(aaveSeries, crvSeries);
+  const merged = mergeSeries(aaveSeries, crvSeries, new Map());
   const withMa = computeMovingAverage(merged, maWindow);
   const lastUpdated = latestDate(merged);
 
@@ -244,8 +275,8 @@ async function loadFallbackFromFile(
     return null;
   }
 
-  const [aaveSeries, crvSeries] = normaliseCsvContent(content);
-  const merged = mergeSeries(aaveSeries, crvSeries);
+  const [aaveSeries, crvSeries, fxusdSeries] = normaliseCsvContent(content);
+  const merged = mergeSeries(aaveSeries, crvSeries, fxusdSeries);
   const withMa = computeMovingAverage(merged, maWindow);
   const lastUpdated = latestDate(merged);
 
