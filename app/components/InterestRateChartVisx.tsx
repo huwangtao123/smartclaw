@@ -6,7 +6,10 @@ import { GridRows } from "@visx/grid";
 import { scaleLinear, scaleTime } from "@visx/scale";
 import { LinePath } from "@visx/shape";
 import { useTooltip, useTooltipInPortal } from "@visx/tooltip";
-import type { MouseEvent as ReactMouseEvent } from "react";
+import type {
+  MouseEvent as ReactMouseEvent,
+  TouchEvent as ReactTouchEvent,
+} from "react";
 import { useMemo, useState } from "react";
 
 import type { RatePoint } from "@/lib/rates";
@@ -53,6 +56,7 @@ export type InterestRateChartVisxProps = {
   language?: "en" | "zh";
   selectedRangeId?: string;
   onRangeChange?: (rangeId: string) => void;
+  rangeHint?: string;
 };
 
 function formatPercent(value: number | null) {
@@ -170,16 +174,20 @@ export function InterestRateChartVisx({
     range: [HEIGHT - MARGIN.bottom, MARGIN.top],
   });
 
-  function handlePointerMove(event: ReactMouseEvent<SVGRectElement>) {
+  function handlePointerMove(
+    event: ReactMouseEvent<SVGSVGElement> | ReactTouchEvent<SVGSVGElement>,
+  ) {
     const coords = localPoint(event);
     if (!coords) return;
     const idx = findClosestIndex(filtered, coords.x, xScale);
     const point = filtered[idx];
     const firstVisible =
-      (showAave && point.aave !== null && point.aave) ??
-      (showCrv && point.crv !== null && point.crv) ??
-      (showMa && showAave && point.aaveMa !== undefined && point.aaveMa) ??
-      (showMa && showCrv && point.crvMa !== undefined && point.crvMa) ??
+      (showAave && point.aave !== null ? point.aave : null) ??
+      (showCrv && point.crv !== null ? point.crv : null) ??
+      (showMa && showAave && point.aaveMa !== undefined
+        ? point.aaveMa
+        : null) ??
+      (showMa && showCrv && point.crvMa !== undefined ? point.crvMa : null) ??
       0;
     showTooltip({
       tooltipData: { point, index: idx },
@@ -404,8 +412,8 @@ export function InterestRateChartVisx({
                     style={{ backgroundColor: COLORS.crvMa }}
                   />
                   MA crvUSD:{" "}
-                  {tooltipData.point.crvusdMa !== undefined
-                    ? formatPercent(tooltipData.point.crvusdMa ?? null)
+                  {tooltipData.point.crvMa !== undefined
+                    ? formatPercent(tooltipData.point.crvMa ?? null)
                     : "—"}
                 </div>
               ) : null}
