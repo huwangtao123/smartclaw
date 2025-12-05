@@ -12,8 +12,10 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import shutil
+import tempfile
 from pathlib import Path
-from typing import Iterable, Set
+from typing import Iterable, List, Set
 
 import json
 import urllib.request
@@ -88,7 +90,7 @@ def iter_reference_rows(path: Path) -> Iterable[dict]:
 
 
 def build_rows(
-    reference_rows: Iterable[dict],
+    reference_rows: List[dict],
     funding_dates: Set[str],
 ) -> Iterable[dict]:
     for row in reference_rows:
@@ -116,9 +118,8 @@ def main() -> None:
     )
     parser.add_argument(
         "--output",
-        default="lending_rates_full.csv",
         type=Path,
-        help="Where to write the funding CSV (default: lending_rates_full.csv).",
+        help="Where to write the CSV. Default: overwrite reference in place.",
     )
     args = parser.parse_args()
 
@@ -130,23 +131,31 @@ def main() -> None:
     if not rows:
         raise SystemExit(f"No rows found in {args.reference}")
 
-    fieldnames = [
-        "date",
-        "fxUSD_borrow_apr_pct",
-        "aave_borrow_apr_pct",
-        "crvusd_borrow_apr_pct",
-    ]
+    # Preserve existing columns; insert fxUSD_borrow_apr_pct after date.
+    existing_fields = list(rows[0].keys())
+    fieldnames = existing_fields.copy()
+    if "fxUSD_borrow_apr_pct" not in fieldnames:
+        try:
+            idx = fieldnames.index("date") + 1
+        except ValueError:
+            idx = 1
+        fieldnames.insert(idx, "fxUSD_borrow_apr_pct")
 
-    with args.output.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+    target = args.output or args.reference
+
+    with tempfile.NamedTemporaryFile("w", newline="", delete=False) as tmp:
+        writer = csv.DictWriter(tmp, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(build_rows(rows, funding_dates))
+        tmp_path = Path(tmp.name)
+
+    shutil.move(tmp_path, target)
 
     print(
-        f"Wrote {len(rows)} rows to {args.output} "
+        f"Wrote {len(rows)} rows to {target} "
         f"(funding days: {len(funding_dates)})"
     )
 
 
 if __name__ == "__main__":
-    main()
+  main()
