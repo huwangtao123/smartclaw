@@ -10,6 +10,7 @@ import {
 import type { RateSeries } from "@/lib/rates";
 
 type Language = "en" | "zh";
+type Collateral = "WBTC" | "wstETH";
 
 type RangeId = (typeof RANGE_OPTIONS)[number]["id"];
 
@@ -29,6 +30,21 @@ function formatPercent(value: number | null | undefined) {
   if (value === null || value === undefined || !Number.isFinite(value))
     return "—";
   return `${value.toFixed(3)}%`;
+}
+
+function formatRate(value: number | null | undefined) {
+  if (value === null || value === undefined || !Number.isFinite(value))
+    return "—";
+  return `${value.toFixed(2)}% APR`;
+}
+
+function formatCurrency(value: number | null | undefined) {
+  if (value === null || value === undefined || !Number.isFinite(value))
+    return "—";
+  return `$${value.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 function LanguageToggle({
@@ -83,11 +99,89 @@ function getRangeDays(rangeId: RangeId) {
   return option?.days ?? null;
 }
 
+function averageRateForWindow(
+  series: RateSeries["series"],
+  key: "fxusdBorrow" | "aaveBorrow",
+  windowDays: number,
+) {
+  if (!series.length) return null;
+  const latest = new Date(`${series[series.length - 1].date}T00:00:00Z`);
+  const cutoff = new Date(latest);
+  cutoff.setUTCDate(cutoff.getUTCDate() - Math.max(0, windowDays));
+  let sum = 0;
+  let count = 0;
+  for (let i = series.length - 1; i >= 0; i -= 1) {
+    const point = series[i];
+    const d = new Date(`${point.date}T00:00:00Z`);
+    if (d < cutoff) break;
+    const value = point[key];
+    if (value !== null && value !== undefined && Number.isFinite(value)) {
+      sum += value;
+      count += 1;
+    }
+  }
+  if (count === 0) return null;
+  return sum / count;
+}
+
+function getLatestRate(series: RateSeries["series"], key: "fxusdBorrow" | "aaveBorrow") {
+  for (let i = series.length - 1; i >= 0; i -= 1) {
+    const value = series[i]?.[key];
+    if (value !== null && value !== undefined && Number.isFinite(value)) {
+      return value as number;
+    }
+  }
+  return null;
+}
+
 export function RatesClient({ data }: { data: RateSeries }) {
   const [language, setLanguage] = useState<Language>("en");
   const [rangeId, setRangeId] = useState<RangeId>("1y");
+  const [amount, setAmount] = useState<number>(10000);
+  const [days, setDays] = useState<number>(30);
+  const [collateral, setCollateral] = useState<Collateral>("WBTC");
   const isZh = language === "zh";
   const hasData = data.series.length > 0;
+  const latestFxApr = getLatestRate(data.series, "fxusdBorrow");
+  const latestAaveApr = getLatestRate(data.series, "aaveBorrow");
+  const windowFxApr = averageRateForWindow(data.series, "fxusdBorrow", days);
+  const windowAaveApr = averageRateForWindow(data.series, "aaveBorrow", days);
+
+  const feeConfig = {
+    open: {
+      WBTC: 0.008,
+      wstETH: 0.005,
+    } as Record<Collateral, number>,
+    close: 0.002,
+    waiverUntil: new Date("2025-12-30T00:00:00Z"),
+  };
+  const isWaived = Date.now() < feeConfig.waiverUntil.getTime();
+
+  const fxSim = useMemo(() => {
+    const apr = windowFxApr ?? latestFxApr ?? 0;
+    const openRate = feeConfig.open[collateral];
+    const principal = Math.max(0, amount);
+    const termYears = Math.max(0, days) / 365;
+    const interest = principal * (apr / 100) * termYears;
+    const openFeeRaw = principal * openRate;
+    const openFee = isWaived ? 0 : openFeeRaw;
+    const closeFee = (principal + interest) * feeConfig.close;
+    const total = interest + openFee + closeFee;
+    const effRate = principal > 0 ? (total / principal) * 100 : 0;
+    return { apr, interest, openFee, openFeeRaw, closeFee, total, effRate, openRate };
+  }, [amount, collateral, days, feeConfig.close, feeConfig.open, isWaived, latestFxApr, windowFxApr]);
+
+  const aaveSim = useMemo(() => {
+    const apr = windowAaveApr ?? latestAaveApr ?? 0;
+    const principal = Math.max(0, amount);
+    const termYears = Math.max(0, days) / 365;
+    const interest = principal * (apr / 100) * termYears;
+    const openFee = 0;
+    const closeFee = 0;
+    const total = interest + openFee + closeFee;
+    const effRate = principal > 0 ? (total / principal) * 100 : 0;
+    return { apr, interest, openFee, closeFee, total, effRate };
+  }, [amount, days, latestAaveApr, windowAaveApr]);
 
   const filteredSeries = useMemo(() => {
     if (!hasData) return [];
@@ -248,6 +342,229 @@ export function RatesClient({ data }: { data: RateSeries }) {
           ) : (
             <RatesPageError language={language} />
           )}
+
+          <div className="rounded-2xl border border-emerald-300/30 bg-slate-900/80 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-xs uppercase tracking-[0.32em] text-emerald-200/80">
+                  {isZh ? "成本模拟器" : "Cost simulator"}
+                </div>
+                <h3 className="text-lg font-semibold text-emerald-50">
+                  {isZh
+                    ? "fxMINT 开仓/还款成本估算"
+                    : "Estimate fxMINT open/close costs"}
+                </h3>
+                <p className="text-xs text-slate-300">
+                  {isZh
+                    ? "参考过去窗口平均 APR 估算利息，未考虑复利（仅供参考）。"
+                    : "Uses past-window average APR for interest estimate; no compounding (reference only, not financial advice)."}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 text-xs">
+                {[
+                  { label: "7d", value: 7 },
+                  { label: "30d", value: 30 },
+                  { label: "90d", value: 90 },
+                  { label: "180d", value: 180 },
+                  { label: "365d", value: 365 },
+                ].map((preset) => (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setDays(preset.value)}
+                    className={`rounded-full border px-3 py-1 ${
+                      days === preset.value
+                        ? "border-emerald-300 bg-emerald-400/20 text-emerald-50"
+                        : "border-emerald-300/30 text-emerald-100/70 hover:border-emerald-200/60 hover:text-emerald-50"
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-[1.1fr_1fr]">
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {(["WBTC", "wstETH"] as Collateral[]).map((asset) => (
+                    <button
+                      key={asset}
+                      type="button"
+                      onClick={() => setCollateral(asset)}
+                      className={`rounded-full border px-3 py-1 ${
+                        collateral === asset
+                          ? "border-emerald-300 bg-emerald-400/20 text-emerald-50"
+                          : "border-emerald-300/30 text-emerald-100/70 hover:border-emerald-200/60 hover:text-emerald-50"
+                      }`}
+                    >
+                      {asset} {isZh ? "作为抵押" : "collateral"}
+                    </button>
+                  ))}
+                </div>
+                <label className="block text-xs uppercase tracking-[0.22em] text-slate-400">
+                  {isZh ? "借款金额 (USDC)" : "Borrow amount (USDC)"}
+                  <input
+                    type="number"
+                    min={0}
+                    value={amount}
+                    onChange={(e) => setAmount(Number(e.target.value) || 0)}
+                    className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none ring-emerald-400/40 focus:border-emerald-300 focus:ring-2"
+                  />
+                </label>
+                <label className="block text-xs uppercase tracking-[0.22em] text-slate-400">
+                  {isZh ? "持有天数" : "Holding days"}
+                  <input
+                    type="number"
+                    min={0}
+                    value={days}
+                    onChange={(e) => setDays(Number(e.target.value) || 0)}
+                    className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none ring-emerald-400/40 focus:border-emerald-300 focus:ring-2"
+                  />
+                </label>
+                <div className="rounded-xl border border-emerald-300/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-50">
+                  {isWaived ? (
+                    <span>
+                      {isZh
+                        ? "开仓费已免除，截止 2025-12-30（仍显示原费用以便对比）"
+                        : "Open fee waived until 2025-12-30 (showing original for comparison)"}
+                    </span>
+                  ) : (
+                    <span>
+                      {isZh
+                        ? `开仓费 ${feeConfig.open[collateral] * 100}% ，还款费 0.2%`
+                        : `Open fee ${feeConfig.open[collateral] * 100}%, close fee 0.2%`}
+                    </span>
+                  )}
+                </div>
+                <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 text-xs">
+                  <div className="flex items-center justify-between text-slate-300">
+                    <span>{isZh ? "总成本对比" : "Total cost comparison"}</span>
+                  </div>
+                  <div className="mt-2 space-y-2">
+                    {[
+                      { label: "fxMINT", value: fxSim.total, color: "bg-emerald-400" },
+                      { label: "Aave", value: aaveSim.total, color: "bg-slate-400" },
+                    ].map((item) => {
+                      const max = Math.max(fxSim.total, aaveSim.total, 1);
+                      const width = Math.max(4, Math.min(100, (item.value / max) * 100));
+                      return (
+                        <div key={item.label}>
+                          <div className="mb-1 flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                            <span>{item.label}</span>
+                            <span className="text-slate-200">{formatCurrency(item.value)}</span>
+                          </div>
+                          <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+                            <div
+                              className={`h-full ${item.color}`}
+                              style={{ width: `${width}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-emerald-200">
+                      <span>{isZh ? "使用 fxMINT 额外节省" : "Extra saved vs Aave"}</span>
+                      <span className="text-emerald-100">
+                        {formatCurrency(Math.max(0, aaveSim.total - fxSim.total))}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="rounded-xl border border-emerald-300/40 bg-slate-800/80 p-3 text-sm text-emerald-50">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase tracking-[0.28em] text-emerald-200/80">
+                      fxMINT (fxUSD)
+                    </span>
+                    <span className="rounded-full bg-emerald-500/20 px-2 py-1 text-[11px] text-emerald-50">
+                      {isZh ? "窗口 APR" : "Window APR"} ·{" "}
+                      {formatRate(windowFxApr ?? latestFxApr)}
+                    </span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                    <div className="rounded-lg bg-slate-900/70 px-2 py-2">
+                      <div className="text-slate-400">Open fee</div>
+                      <div className="font-semibold flex items-center gap-1">
+                        {isWaived ? (
+                          <>
+                            <span className="line-through text-slate-400">
+                              {formatCurrency(fxSim.openFeeRaw)}
+                            </span>
+                            <span className="text-emerald-100">
+                              {formatCurrency(0)}
+                            </span>
+                          </>
+                        ) : (
+                          <span>{formatCurrency(fxSim.openFee)}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-slate-900/70 px-2 py-2">
+                      <div className="text-slate-400">Close fee</div>
+                      <div className="font-semibold">
+                        {formatCurrency(fxSim.closeFee)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-slate-900/70 px-2 py-2">
+                      <div className="text-slate-400">Interest</div>
+                      <div className="font-semibold">
+                        {formatCurrency(fxSim.interest)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-slate-900/70 px-2 py-2">
+                      <div className="text-slate-400">Total cost</div>
+                      <div className="font-semibold text-emerald-100">
+                        {formatCurrency(fxSim.total)}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Current APR badge stays in the header; omit duplicate text here */}
+                </div>
+
+                <div className="rounded-xl border border-slate-700 bg-slate-900/70 p-3 text-sm text-slate-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase tracking-[0.28em] text-slate-400">
+                      Aave USDC
+                    </span>
+                    <span className="rounded-full bg-slate-800 px-2 py-1 text-[11px] text-slate-100">
+                      {isZh ? "窗口 APR" : "Window APR"} ·{" "}
+                      {formatRate(windowAaveApr ?? latestAaveApr)}
+                    </span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                    <div className="rounded-lg bg-slate-800/70 px-2 py-2">
+                      <div className="text-slate-500">Open fee</div>
+                      <div className="font-semibold text-slate-200">
+                        {formatCurrency(aaveSim.openFee)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-slate-800/70 px-2 py-2">
+                      <div className="text-slate-500">Close fee</div>
+                      <div className="font-semibold text-slate-200">
+                        {formatCurrency(aaveSim.closeFee)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-slate-800/70 px-2 py-2">
+                      <div className="text-slate-500">Interest</div>
+                      <div className="font-semibold text-slate-100">
+                        {formatCurrency(aaveSim.interest)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg bg-slate-800/70 px-2 py-2">
+                      <div className="text-slate-500">Total cost</div>
+                      <div className="font-semibold text-slate-100">
+                        {formatCurrency(aaveSim.total)}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Current APR badge stays in the header; omit duplicate text here */}
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80">
             <details open className="text-slate-100">
