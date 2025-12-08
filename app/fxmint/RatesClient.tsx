@@ -347,12 +347,12 @@ export function RatesClient({ data }: { data: RateSeries }) {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="text-xs uppercase tracking-[0.32em] text-emerald-200/80">
-                  {isZh ? "成本模拟器" : "Cost simulator"}
+                  {isZh ? "成本预估" : "Estimate fxMINT total costs"}
                 </div>
                 <h3 className="text-lg font-semibold text-emerald-50">
                   {isZh
-                    ? "fxMINT 开仓/还款成本估算"
-                    : "Estimate fxMINT open/close costs"}
+                    ? "fxMINT 开仓/还款成本预估"
+                    : "Estimate fxMINT total costs"}
                 </h3>
                 <p className="text-xs text-slate-300">
                   {isZh
