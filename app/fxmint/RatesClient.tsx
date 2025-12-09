@@ -13,6 +13,8 @@ type Language = "en" | "zh";
 type Collateral = "WBTC" | "wstETH";
 
 type RangeId = (typeof RANGE_OPTIONS)[number]["id"];
+const MIN_LTV = 1;
+const MAX_LTV = 88;
 
 function formatDateTime(value: string | null) {
   if (!value) return "—";
@@ -45,6 +47,23 @@ function formatCurrency(value: number | null | undefined) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
+}
+
+function formatTokenAmount(value: number | null | undefined) {
+  if (value === null || value === undefined || !Number.isFinite(value))
+    return "—";
+  if (value >= 1) {
+    return value.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+  }
+  return value.toFixed(6);
+}
+
+function clampNumber(value: number, min: number, max: number) {
+  if (Number.isNaN(value)) return min;
+  return Math.min(max, Math.max(min, value));
 }
 
 function LanguageToggle({
@@ -140,12 +159,40 @@ export function RatesClient({ data }: { data: RateSeries }) {
   const [amount, setAmount] = useState<number>(10000);
   const [days, setDays] = useState<number>(30);
   const [collateral, setCollateral] = useState<Collateral>("WBTC");
+  const [ltv, setLtv] = useState<number>(70);
   const isZh = language === "zh";
   const hasData = data.series.length > 0;
   const latestFxApr = getLatestRate(data.series, "fxusdBorrow");
   const latestAaveApr = getLatestRate(data.series, "aaveBorrow");
   const windowFxApr = averageRateForWindow(data.series, "fxusdBorrow", days);
   const windowAaveApr = averageRateForWindow(data.series, "aaveBorrow", days);
+  const assetPrices = (data.assetPrices ?? {}) as Partial<
+    Record<Collateral, number>
+  >;
+  const normalizedLtv = clampNumber(ltv, MIN_LTV, MAX_LTV);
+  const ltvRatio = normalizedLtv / 100;
+  const borrowAmount = Math.max(0, amount);
+  const collateralUsd = ltvRatio > 0 ? borrowAmount / ltvRatio : 0;
+  const collateralBreakdown = useMemo(() => {
+    const breakdown: Record<
+      Collateral,
+      { price: number | null; tokenAmount: number | null }
+    > = {
+      WBTC: { price: null, tokenAmount: null },
+      wstETH: { price: null, tokenAmount: null },
+    };
+    (["WBTC", "wstETH"] as Collateral[]).forEach((asset) => {
+      const price = assetPrices[asset];
+      breakdown[asset] = {
+        price: price ?? null,
+        tokenAmount:
+          price && Number.isFinite(price) && price > 0
+            ? collateralUsd / price
+            : null,
+      };
+    });
+    return breakdown;
+  }, [assetPrices, collateralUsd]);
 
   const feeConfig = {
     open: {
@@ -160,16 +207,25 @@ export function RatesClient({ data }: { data: RateSeries }) {
   const fxSim = useMemo(() => {
     const apr = windowFxApr ?? latestFxApr ?? 0;
     const openRate = feeConfig.open[collateral];
-    const principal = Math.max(0, amount);
     const termYears = Math.max(0, days) / 365;
-    const interest = principal * (apr / 100) * termYears;
-    const openFeeRaw = principal * openRate;
+    const interest = collateralUsd * (apr / 100) * termYears;
+    const openFeeRaw = borrowAmount * openRate;
     const openFee = isWaived ? 0 : openFeeRaw;
-    const closeFee = (principal + interest) * feeConfig.close;
+    const closeFee = (borrowAmount + interest) * feeConfig.close;
     const total = interest + openFee + closeFee;
-    const effRate = principal > 0 ? (total / principal) * 100 : 0;
+    const effRate = borrowAmount > 0 ? (total / borrowAmount) * 100 : 0;
     return { apr, interest, openFee, openFeeRaw, closeFee, total, effRate, openRate };
-  }, [amount, collateral, days, feeConfig.close, feeConfig.open, isWaived, latestFxApr, windowFxApr]);
+  }, [
+    borrowAmount,
+    collateral,
+    collateralUsd,
+    days,
+    feeConfig.close,
+    feeConfig.open,
+    isWaived,
+    latestFxApr,
+    windowFxApr,
+  ]);
 
   const aaveSim = useMemo(() => {
     const apr = windowAaveApr ?? latestAaveApr ?? 0;
@@ -386,22 +442,6 @@ export function RatesClient({ data }: { data: RateSeries }) {
 
             <div className="mt-4 grid gap-4 md:grid-cols-[1.1fr_1fr]">
               <div className="space-y-3">
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {(["WBTC", "wstETH"] as Collateral[]).map((asset) => (
-                    <button
-                      key={asset}
-                      type="button"
-                      onClick={() => setCollateral(asset)}
-                      className={`rounded-full border px-3 py-1 ${
-                        collateral === asset
-                          ? "border-emerald-300 bg-emerald-400/20 text-emerald-50"
-                          : "border-emerald-300/30 text-emerald-100/70 hover:border-emerald-200/60 hover:text-emerald-50"
-                      }`}
-                    >
-                      {asset} {isZh ? "作为抵押" : "collateral"}
-                    </button>
-                  ))}
-                </div>
                 <label className="block text-xs uppercase tracking-[0.22em] text-slate-400">
                   {isZh ? "借款金额 (USDC)" : "Borrow amount (USDC)"}
                   <input
@@ -422,20 +462,93 @@ export function RatesClient({ data }: { data: RateSeries }) {
                     className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none ring-emerald-400/40 focus:border-emerald-300 focus:ring-2"
                   />
                 </label>
-                <div className="rounded-xl border border-emerald-300/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-50">
-                  {isWaived ? (
-                    <span>
-                      {isZh
-                        ? "开仓费已免除，截止 2025-12-30（仍显示原费用以便对比）"
-                        : "Open fee waived until 2025-12-30 (showing original for comparison)"}
-                    </span>
-                  ) : (
-                    <span>
-                      {isZh
-                        ? `开仓费 ${feeConfig.open[collateral] * 100}% ，还款费 0.2%`
-                        : `Open fee ${feeConfig.open[collateral] * 100}%, close fee 0.2%`}
-                    </span>
-                  )}
+                <label className="block text-xs uppercase tracking-[0.22em] text-slate-400">
+                  {isZh ? "抵押率 (LTV %)" : "Loan-to-value (%)"}
+                  <input
+                    type="number"
+                    min={MIN_LTV}
+                    max={MAX_LTV}
+                    step={0.1}
+                    value={normalizedLtv}
+                    onChange={(e) =>
+                      setLtv(
+                        clampNumber(Number(e.target.value) || MIN_LTV, MIN_LTV, MAX_LTV),
+                      )
+                    }
+                    className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none ring-emerald-400/40 focus:border-emerald-300 focus:ring-2"
+                  />
+                  <span className="mt-1 block text-[11px] lowercase text-slate-500">
+                    {isZh
+                      ? "范围 1%-88%，决定所需抵押品规模"
+                      : "Range 1%-88%; drives required collateral size"}
+                  </span>
+                </label>
+                <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 text-xs text-slate-200">
+                  <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                    <span>{isZh ? "所需抵押品" : "Required collateral"}</span>
+                    <span>{`${normalizedLtv}% LTV`}</span>
+                  </div>
+                  <div className="mt-2 text-lg font-semibold text-emerald-100">
+                    {formatCurrency(collateralUsd)}
+                  </div>
+                  <p className="mt-1 text-[11px] text-slate-400">
+                    {isZh ? "按资产换算：" : "Per asset equivalent"}
+                  </p>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    {(["WBTC", "wstETH"] as Collateral[]).map((asset) => {
+                      const info = collateralBreakdown[asset];
+                      const openFeePercent = (feeConfig.open[asset] * 100).toFixed(1);
+                      const isActive = collateral === asset;
+                      return (
+                        <button
+                          key={asset}
+                          type="button"
+                          onClick={() => setCollateral(asset)}
+                          className={`w-full rounded-lg border px-3 py-3 text-left transition ${
+                            isActive
+                              ? "border-emerald-400/70 bg-slate-950/70"
+                              : "border-slate-800 bg-slate-950/40 hover:border-emerald-300/40"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                            <span>{asset}</span>
+                            <span>
+                              {info.price ? `${formatCurrency(info.price)} / ${asset}` : "—"}
+                            </span>
+                          </div>
+                          <div className="mt-1 text-base font-semibold text-slate-100">
+                            {info.tokenAmount ? (
+                              <>
+                                {formatTokenAmount(info.tokenAmount)}{" "}
+                                <span className="text-xs text-slate-400">{asset}</span>
+                              </>
+                            ) : (
+                              "—"
+                            )}
+                          </div>
+                          <p className="mt-1 text-[11px] text-slate-400">
+                            {isZh ? "开仓费" : "Open fee"} {openFeePercent}%
+                          </p>
+                          {asset === "wstETH" && isActive ? (
+                            <p className="mt-1 text-[11px] text-rose-200/90">
+                              {isZh
+                                ? "使用 wstETH 抵押期间没有质押收益"
+                                : "No staking reward when wstETH is posted as collateral"}
+                            </p>
+                          ) : null}
+                          {isActive ? (
+                            <span className="mt-2 inline-block rounded-full bg-emerald-500/20 px-3 py-1 text-[11px] text-emerald-100">
+                              {isZh ? "已选择" : "Selected"}
+                            </span>
+                          ) : (
+                            <span className="mt-2 inline-block rounded-full bg-slate-800 px-3 py-1 text-[11px] text-slate-300">
+                              {isZh ? "点击选择" : "Tap to choose"}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 text-xs">
                   <div className="flex items-center justify-between text-slate-300">
@@ -483,6 +596,21 @@ export function RatesClient({ data }: { data: RateSeries }) {
                       {isZh ? "窗口 APR" : "Window APR"} ·{" "}
                       {formatRate(windowFxApr ?? latestFxApr)}
                     </span>
+                  </div>
+                  <div className="mt-3 rounded-lg border border-emerald-300/30 bg-emerald-500/10 px-3 py-2 text-[11px] text-emerald-50">
+                    {isWaived ? (
+                      <span>
+                        {isZh
+                          ? "开仓费已免除，截止 2025-12-30（仍显示原费用以便对比）"
+                          : "Open fee waived until 2025-12-30 (showing original for comparison)"}
+                      </span>
+                    ) : (
+                      <span>
+                        {isZh
+                          ? `开仓费 ${feeConfig.open[collateral] * 100}% ，还款费 0.2%`
+                          : `Open fee ${feeConfig.open[collateral] * 100}%, close fee 0.2%`}
+                      </span>
+                    )}
                   </div>
                   <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                     <div className="rounded-lg bg-slate-900/70 px-2 py-2">

@@ -6,6 +6,7 @@ const DEFAULT_FALLBACK_FILE = "lending_rates.csv";
 const MAX_STALENESS_MS = 24 * 60 * 60 * 1000; // 1 day
 
 type SeriesMap = Map<string, number>;
+type AssetSymbol = "WBTC" | "wstETH";
 
 export type RatePoint = {
   date: string;
@@ -26,6 +27,7 @@ export type RateSeries = {
   source: RateSource;
   rangeHint?: string;
   error?: string;
+  assetPrices?: Record<string, number>;
 };
 
 type RemoteRateRow = {
@@ -233,6 +235,32 @@ async function fetchJson(url: string) {
   return response.json();
 }
 
+async function fetchAssetPrices(): Promise<Record<string, number>> {
+  const identifiers: Record<AssetSymbol, string> = {
+    WBTC: "coingecko:wrapped-bitcoin",
+    wstETH: "coingecko:wrapped-steth",
+  };
+  const url = `https://coins.llama.fi/prices/current/${Object.values(
+    identifiers,
+  ).join(",")}`;
+  try {
+    const payload = (await fetchJson(url)) as {
+      coins?: Record<string, { price?: number }>;
+    };
+    const prices: Record<string, number> = {};
+    for (const [symbol, key] of Object.entries(identifiers)) {
+      const entry = payload.coins?.[key];
+      const price = entry?.price;
+      if (typeof price === "number" && Number.isFinite(price)) {
+        prices[symbol] = price;
+      }
+    }
+    return prices;
+  } catch {
+    return {};
+  }
+}
+
 async function fetchPrimary(maWindow: number): Promise<RateSeries> {
   const aaveUrl =
     process.env.AAVE_USDC_RATES_URL ??
@@ -304,15 +332,24 @@ export async function loadRates(options?: {
   const maWindow = options?.maWindow ?? DEFAULT_MA_WINDOW;
   const fallbackFile = options?.fallbackFile ?? DEFAULT_FALLBACK_FILE;
   let primaryError: string | undefined;
+  const assetPrices = await fetchAssetPrices();
 
   const fallback = await loadFallbackFromFile(fallbackFile, maWindow);
-  if (fallback && fallback.series.length > 0) return fallback;
+  if (fallback && fallback.series.length > 0) {
+    return {
+      ...fallback,
+      assetPrices,
+    };
+  }
 
   // Only try primary API if no CSV is available.
   try {
     const primary = await fetchPrimary(maWindow);
     if (!isStale(primary.lastUpdated)) {
-      return primary;
+      return {
+        ...primary,
+        assetPrices,
+      };
     }
     primaryError = "Primary data is stale (older than 24h)";
   } catch (error) {
@@ -327,6 +364,7 @@ export async function loadRates(options?: {
     source: "fallback",
     rangeHint: "daily",
     error: primaryError ?? "No data available",
+    assetPrices,
   };
 }
 
