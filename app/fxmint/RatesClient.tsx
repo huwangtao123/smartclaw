@@ -200,7 +200,7 @@ export function RatesClient({ data }: { data: RateSeries }) {
       wstETH: 0.005,
     } as Record<Collateral, number>,
     close: 0.002,
-    waiverUntil: new Date("2025-12-30T00:00:00Z"),
+    waiverUntil: new Date("2026-01-01T00:00:00Z"),
   };
   const isWaived = Date.now() < feeConfig.waiverUntil.getTime();
 
@@ -601,8 +601,8 @@ export function RatesClient({ data }: { data: RateSeries }) {
                     {isWaived ? (
                       <span>
                         {isZh
-                          ? "开仓费已免除，截止 2025-12-30（仍显示原费用以便对比）"
-                          : "Open fee waived until 2025-12-30 (showing original for comparison)"}
+                          ? "开仓费优惠至 2025-12-31 UTC 当日结束（仍显示原费用以便对比）"
+                          : "Open fee discount until end of day of 12/31/2025 UTC (showing original for comparison)"}
                       </span>
                     ) : (
                       <span>
