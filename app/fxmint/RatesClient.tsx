@@ -8,6 +8,10 @@ import {
   RANGE_OPTIONS,
 } from "@/app/components/InterestRateChart";
 import type { RateSeries } from "@/lib/rates";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { GlowingStat } from "@/components/ui/GlowingStat";
+import { NeonProgress } from "@/components/ui/NeonProgress";
+
 
 type Language = "en" | "zh";
 type Collateral = "WBTC" | "wstETH";
@@ -83,11 +87,10 @@ function LanguageToggle({
             key={code}
             type="button"
             onClick={() => onChange(code as Language)}
-            className={`rounded-full px-3 py-1 transition ${
-              isActive
-                ? "bg-emerald-400 text-slate-900"
-                : "hover:bg-slate-800/80 hover:text-slate-100"
-            }`}
+            className={`rounded-full px-3 py-1 transition ${isActive
+              ? "bg-emerald-400 text-slate-900"
+              : "hover:bg-slate-800/80 hover:text-slate-100"
+              }`}
           >
             {label}
           </button>
@@ -308,15 +311,19 @@ export function RatesClient({ data }: { data: RateSeries }) {
   }, [isZh, rangeId]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12">
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-void-900 text-slate-100 relative overflow-hidden">
+
+      {/* Background Decor */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[800px] bg-neon-500/10 blur-[150px] rounded-full -z-10 pointer-events-none" />
+
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12 relative z-10">
+        <div className="flex items-center justify-between animate-enter delay-100">
           <LanguageToggle language={language} onChange={setLanguage} />
-          <div className="flex items-center gap-3 text-xs text-slate-300">
-            <span className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-emerald-100">
+          <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest text-slate-500">
+            <span className="rounded-full border border-neon-500/20 bg-neon-500/5 px-3 py-1 text-neon-300">
               {isZh ? "离线数据已加载" : "Offline data loaded"}
             </span>
-            <span className="rounded-full border border-slate-300/30 bg-slate-800/80 px-3 py-1 text-slate-100">
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
               {isZh
                 ? "实时 API + 离线 CSV 兜底"
                 : "Live API + offline CSV fallback"}
@@ -324,8 +331,9 @@ export function RatesClient({ data }: { data: RateSeries }) {
           </div>
         </div>
 
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-          <div className="relative h-14 w-14 shrink-0">
+
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6 animate-enter delay-200">
+          <div className="relative h-14 w-14 shrink-0 transition-transform hover:scale-110 duration-500">
             <Image
               src="/fx-protocol-icon.svg"
               alt="f(x) Protocol logo"
@@ -335,20 +343,20 @@ export function RatesClient({ data }: { data: RateSeries }) {
             />
           </div>
           <div>
-            <div className="text-sm font-semibold uppercase tracking-[0.35em] text-emerald-300/80">
+            <div className="label-subtle !text-neon-300">
               {isZh ? "借贷利率对比" : "Lending Rate Comparison"}
             </div>
-            <h1 className="mt-2 text-4xl font-semibold text-slate-50 sm:text-5xl">
+            <h1 className="mt-2 text-4xl font-bold tracking-tight text-white sm:text-5xl">
               {isZh
-                ? "fxUSD vs Aave USDC vs crvUSD(WBTC)"
-                : "fxUSD vs Aave USDC vs crvUSD(WBTC)"}
+                ? "fxUSD vs Aave USDC vs crvUSD"
+                : "fxUSD vs Aave USDC vs crvUSD"}
             </h1>
-            <p className="mt-3 max-w-3xl text-sm text-slate-300 sm:text-base">
+            <p className="mt-3 max-w-3xl text-sm text-slate-400 sm:text-base leading-relaxed">
               {isZh
                 ? "对比 fxUSD、Aave USDC、crvUSD(WBTC) 借款利率，支持原始曲线与移动均线，便于观察趋势与偏离。"
                 : "Compare fxUSD, Aave USDC, and crvUSD(WBTC) borrow APR with raw curves and moving averages to spot trends and deviations."}
             </p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-2 text-[10px] uppercase tracking-widest text-slate-500">
               {isZh
                 ? "默认使用离线 CSV 数据，如在线源可用则自动刷新。"
                 : "Uses offline CSV snapshots by default, refreshing from live sources when available."}
@@ -356,33 +364,33 @@ export function RatesClient({ data }: { data: RateSeries }) {
           </div>
         </header>
 
-        <div className="space-y-4">
-          <div className="rounded-3xl border border-emerald-300/30 bg-emerald-500/10 p-4 text-sm text-emerald-50">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-xs uppercase tracking-[0.32em] text-emerald-200/80">
+
+        <div className="space-y-6">
+          <GlassCard className="p-4 bg-neon-500/[0.03] animate-enter delay-300">
+            <div className="flex flex-wrap items-center gap-4">
+              <span className="label-subtle !text-neon-300">
                 {rangeLabel}
               </span>
               {averageCard ? (
                 <>
-                  <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs text-emerald-50">
-                    {isZh ? "fxUSD" : "fxUSD"} · {averageCard.fxAvg.toFixed(3)}%
+                  <span className="rounded-full bg-neon-500/10 border border-neon-500/20 px-3 py-1 text-[10px] font-bold text-neon-300 uppercase tracking-widest">
+                    fxUSD · {averageCard.fxAvg.toFixed(3)}%
                   </span>
-                  <span className="rounded-full bg-slate-900/80 px-3 py-1 text-xs">
-                    {isZh ? "Aave USDC" : "Aave USDC"} ·{" "}
-                    {averageCard.aaveAvg.toFixed(3)}%
+                  <span className="rounded-full bg-white/5 border border-white/10 px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    Aave · {averageCard.aaveAvg.toFixed(3)}%
                   </span>
-                  <span className="rounded-full bg-slate-900/80 px-3 py-1 text-xs">
-                    {isZh ? "crvUSD(WBTC)" : "crvUSD(WBTC)"} ·{" "}
-                    {averageCard.crvAvg.toFixed(3)}%
+                  <span className="rounded-full bg-white/5 border border-white/10 px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    crvUSD · {averageCard.crvAvg.toFixed(3)}%
                   </span>
                 </>
               ) : (
-                <span className="text-xs text-emerald-100/70">
+                <span className="text-[10px] uppercase tracking-widest text-slate-500">
                   {isZh ? "暂无数据" : "No data yet"}
                 </span>
               )}
             </div>
-          </div>
+          </GlassCard>
+
 
           {hasData ? (
             <InterestRateChart
@@ -428,11 +436,10 @@ export function RatesClient({ data }: { data: RateSeries }) {
                     key={preset.label}
                     type="button"
                     onClick={() => setDays(preset.value)}
-                    className={`rounded-full border px-3 py-1 ${
-                      days === preset.value
-                        ? "border-emerald-300 bg-emerald-400/20 text-emerald-50"
-                        : "border-emerald-300/30 text-emerald-100/70 hover:border-emerald-200/60 hover:text-emerald-50"
-                    }`}
+                    className={`rounded-full border px-3 py-1 ${days === preset.value
+                      ? "border-emerald-300 bg-emerald-400/20 text-emerald-50"
+                      : "border-emerald-300/30 text-emerald-100/70 hover:border-emerald-200/60 hover:text-emerald-50"
+                      }`}
                   >
                     {preset.label}
                   </button>
@@ -504,11 +511,10 @@ export function RatesClient({ data }: { data: RateSeries }) {
                           key={asset}
                           type="button"
                           onClick={() => setCollateral(asset)}
-                          className={`w-full rounded-lg border px-3 py-3 text-left transition ${
-                            isActive
-                              ? "border-emerald-400/70 bg-slate-950/70"
-                              : "border-slate-800 bg-slate-950/40 hover:border-emerald-300/40"
-                          }`}
+                          className={`w-full rounded-lg border px-3 py-3 text-left transition ${isActive
+                            ? "border-emerald-400/70 bg-slate-950/70"
+                            : "border-slate-800 bg-slate-950/40 hover:border-emerald-300/40"
+                            }`}
                         >
                           <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-slate-400">
                             <span>{asset}</span>
@@ -694,53 +700,54 @@ export function RatesClient({ data }: { data: RateSeries }) {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80">
-            <details open className="text-slate-100">
-              <summary className="flex cursor-pointer items-center justify-between bg-slate-900/80 px-4 py-3 text-sm font-semibold">
-                {isZh ? "查看当前时间窗的数据" : "View data for current window"}
-                <span className="text-xs text-slate-400">
+          <GlassCard className="overflow-hidden animate-enter delay-700">
+            <details open className="text-slate-100 group">
+              <summary className="flex cursor-pointer items-center justify-between bg-white/[0.03] px-6 py-4 text-sm font-semibold transition hover:bg-white/[0.05]">
+                <div className="flex items-center gap-3">
+                  <span className="label-subtle">
+                    {isZh ? "查看当前时间窗的数据" : "View data for current window"}
+                  </span>
+                </div>
+                <span className="label-subtle !text-slate-500">
                   {tableRows.length} rows
                 </span>
               </summary>
+
               <div className="max-h-[320px] overflow-auto">
-                <table className="min-w-full text-left text-xs text-slate-200">
-                  <thead className="sticky top-0 bg-slate-900">
-                    <tr className="border-b border-slate-800">
-                      <th className="px-4 py-2 font-semibold uppercase tracking-[0.2em] text-slate-400">
-                        date
-                      </th>
-                      <th className="px-4 py-2 font-semibold uppercase tracking-[0.2em] text-slate-400">
-                        protocol
-                      </th>
-                      <th className="px-4 py-2 font-semibold uppercase tracking-[0.2em] text-slate-400">
-                        kind
-                      </th>
-                      <th className="px-4 py-2 font-semibold uppercase tracking-[0.2em] text-slate-400">
-                        apr
-                      </th>
+                <table className="min-w-full text-left text-xs">
+                  <thead className="sticky top-0 bg-void-800 z-10 shadow-sm">
+                    <tr className="border-b border-white/10 uppercase tracking-widest text-[10px] font-bold text-slate-500">
+                      <th className="px-6 py-4">date</th>
+                      <th className="px-6 py-4">protocol</th>
+                      <th className="px-6 py-4">kind</th>
+                      <th className="px-6 py-4">apr</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-white/[0.03]">
+
                     {tableRows.map((row, index) => (
                       <tr
                         key={`${row.protocol}-${row.kind}-${row.date}-${index}`}
-                        className="border-b border-slate-800/60"
+                        className="transition hover:bg-white/[0.02]"
                       >
-                        <td className="px-4 py-2 text-slate-100">{row.date}</td>
-                        <td className="px-4 py-2 text-slate-200">
+                        <td className="px-6 py-4 font-mono text-slate-500">
+                          {row.date}
+                        </td>
+                        <td className="px-6 py-4 text-slate-300 font-medium">
                           {row.protocol}
                         </td>
-                        <td className="px-4 py-2 text-slate-300">{row.kind}</td>
-                        <td className="px-4 py-2 text-slate-100">
+                        <td className="px-6 py-4 text-slate-400 italic">
+                          {row.kind}
+                        </td>
+                        <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-2">
                             {row.parts.map((part) => (
                               <span
                                 key={`${row.date}-${part.label}`}
-                                className={`rounded-full px-2 py-1 ${
-                                  part.highlight
-                                    ? "bg-emerald-500/20 text-emerald-50"
-                                    : "bg-slate-800/70 text-slate-200"
-                                }`}
+                                className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${part.highlight
+                                  ? "bg-neon-500/10 text-neon-300 border border-neon-500/20"
+                                  : "bg-white/5 text-slate-500 border border-white/5"
+                                  }`}
                               >
                                 {part.label}: {part.value}
                               </span>
@@ -752,7 +759,7 @@ export function RatesClient({ data }: { data: RateSeries }) {
                   </tbody>
                 </table>
                 {tableRows.length === 0 ? (
-                  <div className="px-4 py-6 text-center text-slate-400">
+                  <div className="px-6 py-10 text-center text-slate-500 label-subtle">
                     {isZh
                       ? "当前筛选条件下没有数据"
                       : "No data for current filters"}
@@ -760,46 +767,48 @@ export function RatesClient({ data }: { data: RateSeries }) {
                 ) : null}
               </div>
             </details>
-          </div>
+          </GlassCard>
+
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-emerald-300/30 bg-slate-900/70 p-4">
-              <div className="text-xs uppercase tracking-[0.32em] text-emerald-200/80">
+            <GlassCard className="p-6 animate-enter delay-[800ms]">
+              <div className="label-subtle !text-neon-300">
                 {isZh ? "最新时间戳" : "Latest timestamp"}
               </div>
-              <div className="mt-2 text-lg font-semibold text-emerald-50">
+              <div className="mt-3 text-2xl font-mono text-white">
                 {formatDateTime(data.lastUpdated)}
               </div>
-              <p className="mt-2 text-xs text-emerald-100/80">
+              <p className="mt-3 text-[10px] uppercase tracking-widest text-slate-500 leading-relaxed">
                 {isZh
                   ? "若在线源不可用，将自动使用离线 CSV/JSON。"
                   : "Falls back to offline CSV/JSON if live sources fail."}
               </p>
-            </div>
+            </GlassCard>
 
-            <div className="rounded-2xl border border-emerald-300/30 bg-slate-900/70 p-4">
-              <div className="text-xs uppercase tracking-[0.32em] text-emerald-200/80">
+            <GlassCard className="p-6 animate-enter delay-[900ms]">
+              <div className="label-subtle !text-neon-300">
                 {isZh ? "数据源" : "Data source"}
               </div>
-              <p className="mt-2 text-xs text-emerald-100/80">
+              <p className="mt-3 text-[10px] uppercase tracking-widest text-slate-400">
                 {isZh
                   ? `当前数据源：${data.source === "fallback" ? "离线 CSV/JSON" : "在线 API"}`
                   : `Active source: ${data.source === "fallback" ? "Offline CSV/JSON" : "Live API"}`}
               </p>
-              <p className="mt-2 text-xs text-emerald-100/80">
+              <p className="mt-3 text-[10px] uppercase tracking-widest text-slate-500 leading-relaxed">
                 {isZh ? "数据来源：" : "Data feed:"}{" "}
                 <a
                   href="https://dune.com/queries/6297890"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-emerald-200 underline hover:text-emerald-100"
+                  className="text-neon-300 underline underline-offset-4 hover:text-neon-200 transition"
                 >
                   Dune Query 6297890
                 </a>{" "}
                 ({isZh ? "每日运行" : "runs daily"}).
               </p>
-            </div>
+            </GlassCard>
           </div>
+
         </div>
       </div>
     </div>

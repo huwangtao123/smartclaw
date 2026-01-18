@@ -5,6 +5,10 @@ import { loadFilteredTraders } from "@/lib/data";
 import { type DailyVolumeRecord, fetchFxVolumeSnapshot } from "@/lib/fxVolume";
 import { computeMetrics } from "@/lib/metrics";
 import { updateDashboardData } from "@/lib/updateData";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { GlowingStat } from "@/components/ui/GlowingStat";
+import { NeonProgress } from "@/components/ui/NeonProgress";
+
 
 export const dynamic = "force-dynamic";
 
@@ -77,69 +81,70 @@ export default async function PremiumPage() {
 
   const lastVolumeEntryLabel = lastVolumeTimestamp
     ? new Intl.DateTimeFormat("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-        timeZone: "UTC",
-      }).format(new Date(lastVolumeTimestamp))
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+      timeZone: "UTC",
+    }).format(new Date(lastVolumeTimestamp))
     : null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-14">
-        <header className="overflow-hidden rounded-4xl border border-emerald-400/30 bg-gradient-to-br from-emerald-600/40 via-slate-900/70 to-slate-950/90 p-8 shadow-[0_0_120px_-40px_rgba(16,185,129,0.6)] sm:p-12">
+    <div className="min-h-screen bg-void-900 text-slate-100 relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[800px] bg-neon-500/10 blur-[150px] rounded-full -z-10 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-neon-500/5 blur-[120px] rounded-full -z-10 pointer-events-none" />
+
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-14 relative z-10">
+
+        <GlassCard className="overflow-hidden !border-none bg-gradient-to-br from-void-800 to-neon-500/10 p-8 sm:p-12 animate-enter delay-100">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-300/40 bg-emerald-400/10 px-4 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-emerald-100/90">
+              <div className="label-subtle !text-neon-300">
                 x402 Unlock · $1 Unlocks Top 10 PNL · ROI · Volume
               </div>
-              <h1 className="mt-6 text-4xl font-semibold tracking-tight text-emerald-50 sm:text-5xl">
+              <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl">
                 Premium Leaderboard Intelligence
               </h1>
-              <p className="mt-4 text-sm text-emerald-50/80 sm:text-base">
+              <p className="mt-4 text-sm text-slate-400 sm:text-base leading-relaxed">
                 Your $1 unlock delivers the complete top 10 PNL and ROI roster
                 plus live transaction volume diagrams, letting you dissect
                 capital deployment and directional conviction before the next
                 rotation.
               </p>
             </div>
-            <div className="grid w-full max-w-sm gap-4 rounded-3xl border border-white/10 bg-white/5 p-5 text-sm text-emerald-50">
+            <div className="grid w-full max-w-sm gap-6 p-6 bg-white/[0.03] border border-white/10 rounded-3xl">
               <div>
-                <p className="text-xs uppercase tracking-[0.32em] text-emerald-200/80">
+                <div className="label-subtle mb-2">
                   Flow Share Captured
-                </p>
-                <p className="mt-2 text-3xl font-semibold">
+                </div>
+                <div className="text-4xl font-mono text-white drop-shadow-[0_0_10px_rgba(0,255,157,0.3)]">
                   {formatPercent(metrics.weightedWinningRate, 1)}
-                </p>
-                <p className="mt-1 text-xs text-emerald-100/70">
+                </div>
+                <p className="mt-3 text-[10px] text-slate-500 uppercase tracking-wider">
                   Portion of tracked volume steered by winning wallets in this
                   cohort.
                 </p>
+                <div className="mt-4">
+                  <NeonProgress value={metrics.weightedWinningRate * 100} />
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="rounded-2xl border border-emerald-300/20 bg-emerald-500/10 p-3">
-                  <p className="uppercase tracking-[0.28em] text-emerald-200/80">
-                    Top PNL Stack
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-emerald-50">
-                    {formatCurrency(totalTopPnl)}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-sky-300/20 bg-sky-500/10 p-3">
-                  <p className="uppercase tracking-[0.28em] text-sky-200/80">
-                    Avg ROI
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-sky-50">
-                    {formatPercent(averageTopRoi / 100, 1)}
-                  </p>
-                </div>
+              <div className="grid grid-cols-2 gap-4">
+                <GlowingStat
+                  label="Top PNL Stack"
+                  value={formatCurrency(totalTopPnl)}
+                />
+                <GlowingStat
+                  label="Avg ROI"
+                  value={formatPercent(averageTopRoi / 100, 1)}
+                />
               </div>
             </div>
           </div>
+
 
           <div className="mt-10 overflow-hidden rounded-3xl border border-emerald-400/30 bg-slate-950/60">
             <div className="relative aspect-[16/9] w-full">
@@ -171,105 +176,100 @@ export default async function PremiumPage() {
             </div>
           </div>
 
-          <div className="mt-10 flex flex-col gap-4 text-xs text-emerald-100/70 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <span className="font-semibold text-emerald-200">Included:</span>{" "}
-              top 10 PNL and ROI intel, transaction volume diagrams, trade
-              capture momentum overlays, DeBank deep links.
+          <div className="mt-10 flex flex-col gap-4 text-[10px] text-slate-500 uppercase tracking-widest sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              <span className="text-neon-300 font-bold">Included:</span>
+              <span>top 10 PNL and ROI intel</span>
+              <span>transaction volume diagrams</span>
+              <span>trade capture momentum</span>
             </div>
             <Link
               href="/"
-              className="inline-flex items-center justify-center rounded-full border border-emerald-300/70 px-6 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-100 transition hover:border-emerald-200 hover:text-emerald-50"
+              className="inline-flex items-center justify-center rounded-lg border border-white/10 px-6 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300 transition hover:bg-white/[0.05] hover:text-white"
             >
               Back to Dashboard
             </Link>
           </div>
-        </header>
+        </GlassCard>
+
 
         {activeVolumeSeries.length > 0 ? (
-          <section className="rounded-4xl border border-emerald-400/30 bg-gradient-to-tr from-emerald-500/20 via-slate-900/70 to-slate-950/90 p-8 shadow-[0_0_120px_-60px_rgba(16,185,129,0.6)] sm:p-12">
-            <header className="flex flex-col gap-2 text-emerald-100 sm:flex-row sm:items-center sm:justify-between">
+          <GlassCard className="p-8 sm:p-12 animate-enter delay-200">
+            <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-2xl font-semibold tracking-tight text-emerald-50 sm:text-3xl">
+                <h2 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
                   FX Protocol Transaction Volume
                 </h2>
-                <p className="text-sm text-emerald-100/80">
+                <p className="text-sm text-slate-400 mt-1">
                   Last 30 days · Data refreshes every 6 hours.
                 </p>
               </div>
               {lastVolumeEntryLabel ? (
-                <p className="text-xs uppercase tracking-[0.3em] text-emerald-200/80">
+                <div className="label-subtle">
                   Last data entry: {lastVolumeEntryLabel}
-                </p>
+                </div>
               ) : null}
             </header>
             <div className="mt-8 grid gap-10">
               {activeVolumeSeries.map(({ token, data }) => (
-                <FxVolumeChart
-                  key={token}
-                  token={token}
-                  data={data}
-                  subtitle="Last 30 Days · UTC"
-                />
+                <div key={token} className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl">
+                  <FxVolumeChart
+                    token={token}
+                    data={data}
+                    subtitle="Last 30 Days · UTC"
+                  />
+                </div>
               ))}
             </div>
-          </section>
+          </GlassCard>
         ) : null}
 
+
         <section className="grid gap-8 lg:grid-cols-2">
-          <div className="rounded-3xl border border-emerald-400/30 bg-gradient-to-br from-emerald-500/20 via-slate-900/60 to-slate-950/80 p-6">
+          <GlassCard className="p-6 animate-enter delay-300">
             <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.35em] text-emerald-200/80">
+                <h2 className="label-subtle !text-neon-300">
                   Top 10 PNL Wallets
                 </h2>
-                <p className="mt-1 text-xs text-emerald-100/80">
-                  Sorted by clean PNL. Net values include adjustments for wash
-                  trading noise.
+                <p className="mt-1 text-[10px] text-slate-500 uppercase tracking-tight">
+                  Sorted by clean PNL.
                 </p>
               </div>
-              <div className="text-right text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">
-                Total: {formatCurrency(totalTopPnl)}
+              <div className="text-right">
+                <GlowingStat label="Total PNL" value={formatCurrency(totalTopPnl)} className="items-end" />
               </div>
             </header>
-            <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-slate-950/50">
-              <table className="min-w-full divide-y divide-emerald-900/40 text-xs sm:text-sm">
-                <thead className="bg-emerald-500/10 text-emerald-100">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-semibold uppercase tracking-[0.3em]">
-                      Rank
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold uppercase tracking-[0.3em]">
-                      Wallet
-                    </th>
-                    <th className="px-4 py-3 text-right font-semibold uppercase tracking-[0.3em]">
-                      PNL
-                    </th>
-                    <th className="px-4 py-3 text-right font-semibold uppercase tracking-[0.3em]">
-                      Volume
-                    </th>
+            <div className="mt-6 overflow-hidden rounded-2xl border border-white/[0.05] bg-white/[0.02]">
+              <table className="min-w-full text-xs">
+                <thead>
+                  <tr className="bg-white/[0.05]">
+                    <th className="px-4 py-3 text-left label-subtle !text-slate-400">Rank</th>
+                    <th className="px-4 py-3 text-left label-subtle !text-slate-400">Wallet</th>
+                    <th className="px-4 py-3 text-right label-subtle !text-slate-400">PNL</th>
+                    <th className="px-4 py-3 text-right label-subtle !text-slate-400">Volume</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-emerald-900/30">
+                <tbody className="divide-y divide-white/[0.05]">
                   {metrics.topByPnl.map((row) => (
-                    <tr key={row.trader} className="hover:bg-emerald-500/5">
-                      <td className="px-4 py-3 font-mono text-emerald-100/80">
+                    <tr key={row.trader} className="transition hover:bg-white/[0.02] group">
+                      <td className="px-4 py-4 font-mono text-slate-600 group-hover:text-neon-300 transition-colors">
                         #{row.rank}
                       </td>
-                      <td className="px-4 py-3 font-mono text-emerald-100">
+                      <td className="px-4 py-4 font-mono text-slate-300">
                         <Link
                           href={`https://debank.com/profile/${row.trader}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="underline decoration-emerald-200/50 underline-offset-4 hover:text-emerald-50"
+                          className="underline decoration-white/10 underline-offset-4 hover:text-white transition"
                         >
                           {shortenAddress(row.trader)}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-right text-emerald-100">
+                      <td className="px-4 py-4 text-right font-mono text-white">
                         {formatCurrency(row.pnlClean ?? row.pnl ?? 0)}
                       </td>
-                      <td className="px-4 py-3 text-right text-emerald-100">
+                      <td className="px-4 py-4 text-right font-mono text-slate-400">
                         {formatCurrency(row.vol ?? 0)}
                       </td>
                     </tr>
@@ -277,61 +277,53 @@ export default async function PremiumPage() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </GlassCard>
 
-          <div className="rounded-3xl border border-sky-400/30 bg-gradient-to-br from-sky-500/20 via-slate-900/60 to-slate-950/80 p-6">
+
+          <GlassCard className="p-6 animate-enter delay-[400ms]">
             <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.35em] text-sky-200/80">
+                <h2 className="label-subtle !text-neon-300">
                   Top 10 ROI Wallets
                 </h2>
-                <p className="mt-1 text-xs text-sky-100/80">
-                  ROI values expressed as percentage returns, ranked by highest
-                  outperformance.
+                <p className="mt-1 text-[10px] text-slate-500 uppercase tracking-tight">
+                  Ranked by highest outperformance.
                 </p>
               </div>
-              <div className="text-right text-xs font-semibold uppercase tracking-[0.3em] text-sky-200/80">
-                Avg ROI: {formatPercent(averageTopRoi / 100, 1)}
+              <div className="text-right">
+                <GlowingStat label="Avg ROI" value={formatPercent(averageTopRoi / 100, 1)} className="items-end" />
               </div>
             </header>
-            <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-slate-950/50">
-              <table className="min-w-full divide-y divide-sky-900/40 text-xs sm:text-sm">
-                <thead className="bg-sky-500/10 text-sky-100">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-semibold uppercase tracking-[0.3em]">
-                      Rank
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold uppercase tracking-[0.3em]">
-                      Wallet
-                    </th>
-                    <th className="px-4 py-3 text-right font-semibold uppercase tracking-[0.3em]">
-                      ROI
-                    </th>
-                    <th className="px-4 py-3 text-right font-semibold uppercase tracking-[0.3em]">
-                      Net
-                    </th>
+            <div className="mt-6 overflow-hidden rounded-2xl border border-white/[0.05] bg-white/[0.02]">
+              <table className="min-w-full text-xs">
+                <thead>
+                  <tr className="bg-white/[0.05]">
+                    <th className="px-4 py-3 text-left label-subtle !text-slate-400">Rank</th>
+                    <th className="px-4 py-3 text-left label-subtle !text-slate-400">Wallet</th>
+                    <th className="px-4 py-3 text-right label-subtle !text-slate-400">ROI</th>
+                    <th className="px-4 py-3 text-right label-subtle !text-slate-400">Net</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-sky-900/30">
+                <tbody className="divide-y divide-white/[0.05]">
                   {metrics.topByRoi.map((row) => (
-                    <tr key={row.trader} className="hover:bg-sky-500/5">
-                      <td className="px-4 py-3 font-mono text-sky-100/80">
+                    <tr key={row.trader} className="transition hover:bg-white/[0.02] group">
+                      <td className="px-4 py-4 font-mono text-slate-600 group-hover:text-neon-300 transition-colors">
                         #{row.rank}
                       </td>
-                      <td className="px-4 py-3 font-mono text-sky-100">
+                      <td className="px-4 py-4 font-mono text-slate-300">
                         <Link
                           href={`https://debank.com/profile/${row.trader}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="underline decoration-sky-200/50 underline-offset-4 hover:text-sky-50"
+                          className="underline decoration-white/10 underline-offset-4 hover:text-white transition"
                         >
                           {shortenAddress(row.trader)}
                         </Link>
                       </td>
-                      <td className="px-4 py-3 text-right text-sky-100">
+                      <td className="px-4 py-4 text-right font-mono text-white">
                         {formatPercent((row.roi ?? 0) / 100, 1)}
                       </td>
-                      <td className="px-4 py-3 text-right text-sky-100">
+                      <td className="px-4 py-4 text-right font-mono text-slate-400">
                         {formatCurrency(row.net ?? 0)}
                       </td>
                     </tr>
@@ -339,47 +331,49 @@ export default async function PremiumPage() {
                 </tbody>
               </table>
             </div>
-          </div>
+          </GlassCard>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-8">
-          <h2 className="text-sm font-semibold uppercase tracking-[0.35em] text-slate-200/80">
-            Premium Signals
+
+        <GlassCard className="p-8 animate-enter delay-500">
+          <h2 className="label-subtle !text-neon-300">
+            Premium Signal Artifacts
           </h2>
-          <div className="mt-4 grid gap-6 md:grid-cols-3">
-            <article className="rounded-2xl border border-white/10 bg-slate-950/60 p-5">
-              <h3 className="text-xs uppercase tracking-[0.28em] text-emerald-200">
+          <div className="mt-6 grid gap-6 md:grid-cols-3">
+            <article className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 hover:border-neon-500/20 transition">
+              <h3 className="label-subtle !text-neon-300">
                 Flow Magnet
               </h3>
-              <p className="mt-2 text-sm text-slate-200">
+              <p className="mt-2 text-sm text-slate-400 leading-relaxed">
                 Winning wallets control{" "}
                 {formatPercent(metrics.weightedWinningRate, 1)} of tracked flow,
                 and the premium list shows exactly where that capital
                 consolidates.
               </p>
             </article>
-            <article className="rounded-2xl border border-white/10 bg-slate-950/60 p-5">
-              <h3 className="text-xs uppercase tracking-[0.28em] text-sky-200">
+            <article className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 hover:border-neon-500/20 transition">
+              <h3 className="label-subtle !text-neon-300">
                 Conviction
               </h3>
-              <p className="mt-2 text-sm text-slate-200">
+              <p className="mt-2 text-sm text-slate-400 leading-relaxed">
                 Average ROI across the top performers is{" "}
                 {formatPercent(averageTopRoi / 100, 1)}, underscoring the
                 momentum behind directional trades.
               </p>
             </article>
-            <article className="rounded-2xl border border-white/10 bg-slate-950/60 p-5">
-              <h3 className="text-xs uppercase tracking-[0.28em] text-amber-200">
+            <article className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 hover:border-neon-500/20 transition">
+              <h3 className="label-subtle !text-neon-300">
                 Execution Bias
               </h3>
-              <p className="mt-2 text-sm text-slate-200">
+              <p className="mt-2 text-sm text-slate-400 leading-relaxed">
                 Combine PNL and ROI cohorts to pinpoint wallets that pair
                 conviction with efficient execution. These addresses often lead
                 the next rotation.
               </p>
             </article>
           </div>
-        </section>
+        </GlassCard>
+
       </div>
     </div>
   );
