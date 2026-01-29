@@ -142,6 +142,64 @@ const components: Components = {
       required: ["x402Version", "topByPnl", "topByRoi", "generatedAt"],
       additionalProperties: false,
     },
+    FxUsdRate: {
+      type: "object",
+      description: "A single fxUSD rate data point.",
+      properties: {
+        date: {
+          type: "string",
+          format: "date",
+          description: "UTC date of the rate recording.",
+          example: "2025-07-24",
+        },
+        rate: {
+          type: ["number", "null"],
+          description: "fxUSD borrow APR percentage.",
+          example: 4.949,
+        },
+      },
+      required: ["date", "rate"],
+      additionalProperties: false,
+    },
+    FxUsdRateResponse: {
+      type: "object",
+      properties: {
+        latest: {
+          $ref: "#/components/schemas/FxUsdRate",
+        },
+        series: {
+          type: "array",
+          description: "Historical data points, sorted from latest to earliest.",
+          items: {
+            $ref: "#/components/schemas/FxUsdRate",
+          },
+        },
+        meta: {
+          type: "object",
+          properties: {
+            maWindow: {
+              type: "integer",
+              description: "The window size used for computing moving averages.",
+              example: 30,
+            },
+            lastUpdated: {
+              type: "string",
+              format: "date-time",
+              description: "Timestamp of the last data update.",
+            },
+            source: {
+              type: "string",
+              description: "Source of the data (primary or fallback).",
+              example: "fallback",
+            },
+          },
+          required: ["maWindow", "lastUpdated", "source"],
+          additionalProperties: false,
+        },
+      },
+      required: ["latest", "series", "meta"],
+      additionalProperties: false,
+    },
     ErrorResponse: {
       type: "object",
       properties: {
@@ -235,6 +293,57 @@ const components: Components = {
 };
 
 const endpointDefinitions: EndpointDefinition[] = [
+  {
+    path: "/api/fxusd-rate",
+    method: "get",
+    operation: {
+      tags: ["Public"],
+      summary: "fxUSD borrow rates",
+      description:
+        "Returns the latest and historical fxUSD borrow APR. Data is sourced from f(x) Protocol funding windows.",
+      parameters: [
+        {
+          name: "maWindow",
+          in: "query",
+          description: "Moving average window size in days.",
+          required: false,
+          schema: {
+            type: "integer",
+            default: 30,
+          },
+        },
+        {
+          name: "limit",
+          in: "query",
+          description:
+            "Number of historical data points to return (defaults to all).",
+          required: false,
+          schema: {
+            type: "integer",
+            minimum: 1,
+          },
+        },
+      ],
+      responses: {
+        "200": {
+          description: "The fxUSD rate data.",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/FxUsdRateResponse",
+              },
+            },
+          },
+        },
+        "503": {
+          description: "No rate data available.",
+        },
+        "500": {
+          $ref: "#/components/responses/ServerError",
+        },
+      },
+    },
+  },
   {
     path: "/api/top-pnl",
     method: "get",

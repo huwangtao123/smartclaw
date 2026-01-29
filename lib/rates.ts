@@ -226,13 +226,25 @@ function latestDate(series: RatePoint[]) {
 }
 
 async function fetchJson(url: string) {
-  const response = await fetch(url, { cache: "no-store" });
-  if (!response.ok) {
-    throw new Error(
-      `Request failed (${response.status} ${response.statusText})`,
-    );
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    clearTimeout(id);
+    if (!response.ok) {
+      throw new Error(
+        `Request failed (${response.status} ${response.statusText})`,
+      );
+    }
+    return response.json();
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
   }
-  return response.json();
 }
 
 async function fetchAssetPrices(): Promise<Record<string, number>> {
@@ -261,6 +273,78 @@ async function fetchAssetPrices(): Promise<Record<string, number>> {
   }
 }
 
+async function fetchFxUsdFundingDates(
+  fundingId = "wstETH",
+): Promise<Set<string>> {
+  const query = `
+    query FundingWindows($fundingId: String!) {
+      records(
+        first: 1000
+        orderBy: blockNumber
+        orderDirection: desc
+        where: { fundingId: $fundingId }
+      ) {
+        start
+        end
+      }
+    }
+  `;
+
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+  try {
+    const response = await fetch(
+      "https://api.studio.thegraph.com/query/43247/fx-v-2-funding/version/latest",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-Agent": "funding-rate-script/1.0",
+        },
+        body: JSON.stringify({
+          query,
+          variables: { fundingId },
+        }),
+        signal: controller.signal,
+      },
+    );
+    clearTimeout(id);
+
+    if (!response.ok) return new Set();
+
+    const payload = await response.json();
+    const records = (payload.data?.records || []) as {
+      start: string;
+      end: string;
+    }[];
+    const dates = new Set<string>();
+
+    for (const record of records) {
+      const start = Number.parseInt(record.start, 10);
+      const end = Number.parseInt(record.end, 10);
+      if (Number.isNaN(start) || Number.isNaN(end) || end <= start) continue;
+
+      // API returns seconds; convert to UTC dates
+      const startDt = new Date(start * 1000);
+      const endDt = new Date(end * 1000);
+
+      const cursor = new Date(startDt);
+      cursor.setUTCMinutes(0, 0, 0);
+
+      while (cursor <= endDt) {
+        dates.add(cursor.toISOString().split("T")[0]);
+        cursor.setUTCHours(cursor.getUTCHours() + 1);
+      }
+    }
+
+    return dates;
+  } catch (error) {
+    console.error("[rates] Failed to fetch fxUSD funding from subgraph", error);
+    return new Set();
+  }
+}
+
 async function fetchPrimary(maWindow: number): Promise<RateSeries> {
   const aaveUrl =
     process.env.AAVE_USDC_RATES_URL ??
@@ -269,14 +353,26 @@ async function fetchPrimary(maWindow: number): Promise<RateSeries> {
     process.env.CRVUSD_AVERAGE_RATES_URL ??
     "https://yields.llama.fi/chart/curve?stablecoin=crvusd";
 
-  const [aavePayload, crvPayload] = await Promise.all([
+  const [aavePayload, crvPayload, fundingDates] = await Promise.all([
     fetchJson(aaveUrl),
     fetchJson(crvUrl),
+    fetchFxUsdFundingDates(),
   ]);
 
   const aaveSeries = normaliseRemoteSeries(aavePayload);
   const crvSeries = normaliseRemoteSeries(crvPayload);
-  const merged = mergeSeries(aaveSeries, crvSeries, new Map());
+
+  // Map fxUSD borrow rate to aave rate on funding days, 0 otherwise
+  const fxUsdMap = new Map<string, number>();
+  for (const [date, rate] of aaveSeries.entries()) {
+    if (fundingDates.has(date)) {
+      fxUsdMap.set(date, rate);
+    } else {
+      fxUsdMap.set(date, 0);
+    }
+  }
+
+  const merged = mergeSeries(aaveSeries, crvSeries, fxUsdMap);
   const withMa = computeMovingAverage(merged, maWindow);
   const lastUpdated = latestDate(merged);
 
@@ -334,15 +430,6 @@ export async function loadRates(options?: {
   let primaryError: string | undefined;
   const assetPrices = await fetchAssetPrices();
 
-  const fallback = await loadFallbackFromFile(fallbackFile, maWindow);
-  if (fallback && fallback.series.length > 0) {
-    return {
-      ...fallback,
-      assetPrices,
-    };
-  }
-
-  // Only try primary API if no CSV is available.
   try {
     const primary = await fetchPrimary(maWindow);
     if (!isStale(primary.lastUpdated)) {
@@ -351,10 +438,19 @@ export async function loadRates(options?: {
         assetPrices,
       };
     }
-    primaryError = "Primary data is stale (older than 24h)";
+    primaryError = `Primary data is stale (last updated: ${primary.lastUpdated})`;
   } catch (error) {
     primaryError =
       error instanceof Error ? error.message : "Primary rate fetch failed";
+  }
+
+  const fallback = await loadFallbackFromFile(fallbackFile, maWindow);
+  if (fallback && fallback.series.length > 0) {
+    return {
+      ...fallback,
+      assetPrices,
+      error: primaryError, // Note the error but still return fallback
+    };
   }
 
   return {
