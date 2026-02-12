@@ -19,7 +19,7 @@
 
   /* Glass Utils */
   --color-glass-stroke: rgba(255, 255, 255, 0.08);
-  
+
   /* Animations */
   --animate-enter: slideUpFade 0.5s ease-out forwards;
 }

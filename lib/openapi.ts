@@ -169,7 +169,8 @@ const components: Components = {
         },
         series: {
           type: "array",
-          description: "Historical data points, sorted from latest to earliest.",
+          description:
+            "Historical data points, sorted from latest to earliest.",
           items: {
             $ref: "#/components/schemas/FxUsdRate",
           },
@@ -179,7 +180,8 @@ const components: Components = {
           properties: {
             maWindow: {
               type: "integer",
-              description: "The window size used for computing moving averages.",
+              description:
+                "The window size used for computing moving averages.",
               example: 30,
             },
             lastUpdated: {
@@ -297,10 +299,12 @@ const endpointDefinitions: EndpointDefinition[] = [
     path: "/api/fxusd-rate",
     method: "get",
     operation: {
+      operationId: "getFxusdRate",
+      "x-openai-isConsequential": false,
       tags: ["Public"],
       summary: "fxUSD borrow rates",
       description:
-        "Returns the latest and historical fxUSD borrow APR. Data is sourced from f(x) Protocol funding windows.",
+        "Returns the latest and historical fxUSD borrow APR. Data is sourced from f(x) Protocol funding windows. Use this to check the current borrow cost before opening a leveraged position or to track rate trends over time.",
       parameters: [
         {
           name: "maWindow",
@@ -348,10 +352,12 @@ const endpointDefinitions: EndpointDefinition[] = [
     path: "/api/top-pnl",
     method: "get",
     operation: {
+      operationId: "getTopPnl",
+      "x-openai-isConsequential": false,
       tags: ["Public"],
       summary: "Top PNL wallets",
       description:
-        "Returns the highest cleaned-PNL wallets from the latest f(x) Protocol leaderboard snapshot. Data is refreshed on each request unless caching is explicitly disabled.",
+        "Returns the highest cleaned-PNL wallets from the latest f(x) Protocol leaderboard snapshot. Data is refreshed on each request. Use this to identify top-performing traders for copy-trading analysis or market intelligence.",
       parameters: [
         {
           name: "limit",
@@ -384,13 +390,69 @@ const endpointDefinitions: EndpointDefinition[] = [
     },
   },
   {
+    path: "/api/rates",
+    method: "get",
+    operation: {
+      operationId: "getRates",
+      "x-openai-isConsequential": false,
+      tags: ["Public"],
+      summary: "Cross-protocol lending rates",
+      description:
+        "Returns full lending rate data across Aave, CrvUSD, and fxUSD with optional moving averages. Use this to compare DeFi borrow rates across protocols and find the cheapest borrowing option.",
+      parameters: [
+        {
+          name: "maWindow",
+          in: "query",
+          description: "Moving average window size in days.",
+          required: false,
+          schema: {
+            type: "integer",
+            default: 30,
+          },
+        },
+        {
+          name: "fallback",
+          in: "query",
+          description:
+            "Path to a fallback CSV file when the primary data source is unavailable.",
+          required: false,
+          schema: {
+            type: "string",
+          },
+        },
+      ],
+      responses: {
+        "200": {
+          description: "Lending rate data across protocols.",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                description:
+                  "Rate comparison data including Aave, CrvUSD, and fxUSD borrow rates with moving averages.",
+              },
+            },
+          },
+        },
+        "503": {
+          description: "No rate data available.",
+        },
+        "500": {
+          $ref: "#/components/responses/ServerError",
+        },
+      },
+    },
+  },
+  {
     path: "/api/premium",
     method: "get",
     operation: {
+      operationId: "getPremiumMetrics",
+      "x-openai-isConsequential": false,
       tags: ["Premium"],
       summary: "Premium leaderboard metrics",
       description:
-        "Mirrors the premium dashboard insights for authenticated subscribers. Requests without a premium cookie receive a 402 payment required response from middleware.",
+        "Returns premium leaderboard insights including top traders by PNL and ROI. Requires x402 USDC payment ($1 on Base network). Requests without a premium cookie receive a 402 payment required response.",
       security: [
         {
           PremiumAccessCookie: [],
@@ -420,10 +482,12 @@ const endpointDefinitions: EndpointDefinition[] = [
     path: "/api/x402/session-token",
     method: "post",
     operation: {
+      operationId: "createX402SessionToken",
+      "x-openai-isConsequential": true,
       tags: ["Premium"],
       summary: "Initiate x402 session token exchange",
       description:
-        "Forwards the request body to the x402 payment infrastructure so clients can initiate a premium checkout flow. The request and response formats are defined by the `x402-next` package.",
+        "Forwards the request body to the x402 payment infrastructure so clients can initiate a premium checkout flow. This initiates a payment — call only when the user explicitly wants to unlock premium access.",
       requestBody: {
         required: true,
         content: {
@@ -447,10 +511,12 @@ const endpointDefinitions: EndpointDefinition[] = [
     path: "/api/openapi",
     method: "get",
     operation: {
+      operationId: "getOpenApiSpec",
+      "x-openai-isConsequential": false,
       tags: ["Internal"],
       summary: "Current OpenAPI document",
       description:
-        "Returns the OpenAPI 3.1 document describing every live API endpoint exposed by this deployment.",
+        "Returns the OpenAPI 3.1 document describing every live API endpoint exposed by this deployment. Agents should read this first to understand available operations.",
       responses: {
         "200": {
           description: "OpenAPI document in JSON format.",
@@ -487,19 +553,25 @@ export function buildOpenApiDocument() {
     openapi: "3.1.0",
     info: {
       title: "f(x) Protocol Leaderboard API",
-      version: "1.1.0",
+      version: "1.2.0",
       description:
-        "Programmatic access to the f(x) Protocol leaderboard insights, including both public and premium datasets.",
+        "Programmatic access to the f(x) Protocol leaderboard insights, including both public and premium datasets. AI agents: start with /llms.txt for a quick overview, or read this full spec for detailed schemas.",
+    },
+    externalDocs: {
+      description: "AI-friendly summary of available capabilities",
+      url: "/llms.txt",
     },
     servers: buildServers(),
     tags: [
       {
         name: "Public",
-        description: "Endpoints that can be called without premium access.",
+        description:
+          "Endpoints that can be called without authentication. Safe for agents to call automatically.",
       },
       {
         name: "Premium",
-        description: "Endpoints gated behind the premium paywall.",
+        description:
+          "Endpoints gated behind an x402 USDC paywall ($1 on Base network). Requires explicit user consent before payment.",
       },
       {
         name: "Internal",

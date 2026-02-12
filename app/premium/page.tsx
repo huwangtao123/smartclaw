@@ -9,7 +9,6 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowingStat } from "@/components/ui/GlowingStat";
 import { NeonProgress } from "@/components/ui/NeonProgress";
 
-
 export const dynamic = "force-dynamic";
 
 function formatCurrency(value: number) {
@@ -81,15 +80,15 @@ export default async function PremiumPage() {
 
   const lastVolumeEntryLabel = lastVolumeTimestamp
     ? new Intl.DateTimeFormat("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: true,
-      timeZone: "UTC",
-    }).format(new Date(lastVolumeTimestamp))
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+        timeZone: "UTC",
+      }).format(new Date(lastVolumeTimestamp))
     : null;
 
   return (
@@ -99,7 +98,6 @@ export default async function PremiumPage() {
       <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-neon-500/5 blur-[120px] rounded-full -z-10 pointer-events-none" />
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-14 relative z-10">
-
         <GlassCard className="overflow-hidden !border-none bg-gradient-to-br from-void-800 to-neon-500/10 p-8 sm:p-12 animate-enter delay-100">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-3xl">
@@ -118,9 +116,7 @@ export default async function PremiumPage() {
             </div>
             <div className="grid w-full max-w-sm gap-6 p-6 bg-white/[0.03] border border-white/10 rounded-3xl">
               <div>
-                <div className="label-subtle mb-2">
-                  Flow Share Captured
-                </div>
+                <div className="label-subtle mb-2">Flow Share Captured</div>
                 <div className="text-4xl font-mono text-white drop-shadow-[0_0_10px_rgba(0,255,157,0.3)]">
                   {formatPercent(metrics.weightedWinningRate, 1)}
                 </div>
@@ -144,7 +140,6 @@ export default async function PremiumPage() {
               </div>
             </div>
           </div>
-
 
           <div className="mt-10 overflow-hidden rounded-3xl border border-emerald-400/30 bg-slate-950/60">
             <div className="relative aspect-[16/9] w-full">
@@ -192,7 +187,6 @@ export default async function PremiumPage() {
           </div>
         </GlassCard>
 
-
         {activeVolumeSeries.length > 0 ? (
           <GlassCard className="p-8 sm:p-12 animate-enter delay-200">
             <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -212,7 +206,10 @@ export default async function PremiumPage() {
             </header>
             <div className="mt-8 grid gap-10">
               {activeVolumeSeries.map(({ token, data }) => (
-                <div key={token} className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl">
+                <div
+                  key={token}
+                  className="p-6 bg-white/[0.02] border border-white/5 rounded-3xl"
+                >
                   <FxVolumeChart
                     token={token}
                     data={data}
@@ -223,7 +220,6 @@ export default async function PremiumPage() {
             </div>
           </GlassCard>
         ) : null}
-
 
         <section className="grid gap-8 lg:grid-cols-2">
           <GlassCard className="p-6 animate-enter delay-300">
@@ -237,22 +233,37 @@ export default async function PremiumPage() {
                 </p>
               </div>
               <div className="text-right">
-                <GlowingStat label="Total PNL" value={formatCurrency(totalTopPnl)} className="items-end" />
+                <GlowingStat
+                  label="Total PNL"
+                  value={formatCurrency(totalTopPnl)}
+                  className="items-end"
+                />
               </div>
             </header>
             <div className="mt-6 overflow-hidden rounded-2xl border border-white/[0.05] bg-white/[0.02]">
               <table className="min-w-full text-xs">
                 <thead>
                   <tr className="bg-white/[0.05]">
-                    <th className="px-4 py-3 text-left label-subtle !text-slate-400">Rank</th>
-                    <th className="px-4 py-3 text-left label-subtle !text-slate-400">Wallet</th>
-                    <th className="px-4 py-3 text-right label-subtle !text-slate-400">PNL</th>
-                    <th className="px-4 py-3 text-right label-subtle !text-slate-400">Volume</th>
+                    <th className="px-4 py-3 text-left label-subtle !text-slate-400">
+                      Rank
+                    </th>
+                    <th className="px-4 py-3 text-left label-subtle !text-slate-400">
+                      Wallet
+                    </th>
+                    <th className="px-4 py-3 text-right label-subtle !text-slate-400">
+                      PNL
+                    </th>
+                    <th className="px-4 py-3 text-right label-subtle !text-slate-400">
+                      Volume
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.05]">
                   {metrics.topByPnl.map((row) => (
-                    <tr key={row.trader} className="transition hover:bg-white/[0.02] group">
+                    <tr
+                      key={row.trader}
+                      className="transition hover:bg-white/[0.02] group"
+                    >
                       <td className="px-4 py-4 font-mono text-slate-600 group-hover:text-neon-300 transition-colors">
                         #{row.rank}
                       </td>
@@ -279,7 +290,6 @@ export default async function PremiumPage() {
             </div>
           </GlassCard>
 
-
           <GlassCard className="p-6 animate-enter delay-[400ms]">
             <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -291,22 +301,37 @@ export default async function PremiumPage() {
                 </p>
               </div>
               <div className="text-right">
-                <GlowingStat label="Avg ROI" value={formatPercent(averageTopRoi / 100, 1)} className="items-end" />
+                <GlowingStat
+                  label="Avg ROI"
+                  value={formatPercent(averageTopRoi / 100, 1)}
+                  className="items-end"
+                />
               </div>
             </header>
             <div className="mt-6 overflow-hidden rounded-2xl border border-white/[0.05] bg-white/[0.02]">
               <table className="min-w-full text-xs">
                 <thead>
                   <tr className="bg-white/[0.05]">
-                    <th className="px-4 py-3 text-left label-subtle !text-slate-400">Rank</th>
-                    <th className="px-4 py-3 text-left label-subtle !text-slate-400">Wallet</th>
-                    <th className="px-4 py-3 text-right label-subtle !text-slate-400">ROI</th>
-                    <th className="px-4 py-3 text-right label-subtle !text-slate-400">Net</th>
+                    <th className="px-4 py-3 text-left label-subtle !text-slate-400">
+                      Rank
+                    </th>
+                    <th className="px-4 py-3 text-left label-subtle !text-slate-400">
+                      Wallet
+                    </th>
+                    <th className="px-4 py-3 text-right label-subtle !text-slate-400">
+                      ROI
+                    </th>
+                    <th className="px-4 py-3 text-right label-subtle !text-slate-400">
+                      Net
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.05]">
                   {metrics.topByRoi.map((row) => (
-                    <tr key={row.trader} className="transition hover:bg-white/[0.02] group">
+                    <tr
+                      key={row.trader}
+                      className="transition hover:bg-white/[0.02] group"
+                    >
                       <td className="px-4 py-4 font-mono text-slate-600 group-hover:text-neon-300 transition-colors">
                         #{row.rank}
                       </td>
@@ -334,16 +359,13 @@ export default async function PremiumPage() {
           </GlassCard>
         </section>
 
-
         <GlassCard className="p-8 animate-enter delay-500">
           <h2 className="label-subtle !text-neon-300">
             Premium Signal Artifacts
           </h2>
           <div className="mt-6 grid gap-6 md:grid-cols-3">
             <article className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 hover:border-neon-500/20 transition">
-              <h3 className="label-subtle !text-neon-300">
-                Flow Magnet
-              </h3>
+              <h3 className="label-subtle !text-neon-300">Flow Magnet</h3>
               <p className="mt-2 text-sm text-slate-400 leading-relaxed">
                 Winning wallets control{" "}
                 {formatPercent(metrics.weightedWinningRate, 1)} of tracked flow,
@@ -352,9 +374,7 @@ export default async function PremiumPage() {
               </p>
             </article>
             <article className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 hover:border-neon-500/20 transition">
-              <h3 className="label-subtle !text-neon-300">
-                Conviction
-              </h3>
+              <h3 className="label-subtle !text-neon-300">Conviction</h3>
               <p className="mt-2 text-sm text-slate-400 leading-relaxed">
                 Average ROI across the top performers is{" "}
                 {formatPercent(averageTopRoi / 100, 1)}, underscoring the
@@ -362,9 +382,7 @@ export default async function PremiumPage() {
               </p>
             </article>
             <article className="rounded-2xl border border-white/5 bg-white/[0.02] p-5 hover:border-neon-500/20 transition">
-              <h3 className="label-subtle !text-neon-300">
-                Execution Bias
-              </h3>
+              <h3 className="label-subtle !text-neon-300">Execution Bias</h3>
               <p className="mt-2 text-sm text-slate-400 leading-relaxed">
                 Combine PNL and ROI cohorts to pinpoint wallets that pair
                 conviction with efficient execution. These addresses often lead
@@ -373,7 +391,6 @@ export default async function PremiumPage() {
             </article>
           </div>
         </GlassCard>
-
       </div>
     </div>
   );

@@ -9,7 +9,8 @@
     "lint": "biome check",
     "format": "biome format --write",
     "prepare-data": "python scripts/generate_lending_protocol_rates.py && python scripts/generate_fxUSD_rates.py --reference lending_rates.csv --output lending_rates.csv",
-    "build-with-data": "npm run prepare-data && npm run build"
+    "build-with-data": "npm run prepare-data && npm run build",
+    "test": "node --experimental-strip-types --experimental-transform-types --test lib/*.test.ts"
   },
   "dependencies": {
     "@visx/axis": "^4.0.1-alpha.0",

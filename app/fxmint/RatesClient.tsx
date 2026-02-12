@@ -12,7 +12,6 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowingStat } from "@/components/ui/GlowingStat";
 import { NeonProgress } from "@/components/ui/NeonProgress";
 
-
 type Language = "en" | "zh";
 type Collateral = "WBTC" | "wstETH";
 
@@ -87,10 +86,11 @@ function LanguageToggle({
             key={code}
             type="button"
             onClick={() => onChange(code as Language)}
-            className={`rounded-full px-3 py-1 transition ${isActive
-              ? "bg-emerald-400 text-slate-900"
-              : "hover:bg-slate-800/80 hover:text-slate-100"
-              }`}
+            className={`rounded-full px-3 py-1 transition ${
+              isActive
+                ? "bg-emerald-400 text-slate-900"
+                : "hover:bg-slate-800/80 hover:text-slate-100"
+            }`}
           >
             {label}
           </button>
@@ -146,7 +146,10 @@ function averageRateForWindow(
   return sum / count;
 }
 
-function getLatestRate(series: RateSeries["series"], key: "fxusdBorrow" | "aaveBorrow") {
+function getLatestRate(
+  series: RateSeries["series"],
+  key: "fxusdBorrow" | "aaveBorrow",
+) {
   for (let i = series.length - 1; i >= 0; i -= 1) {
     const value = series[i]?.[key];
     if (value !== null && value !== undefined && Number.isFinite(value)) {
@@ -217,7 +220,16 @@ export function RatesClient({ data }: { data: RateSeries }) {
     const closeFee = (borrowAmount + interest) * feeConfig.close;
     const total = interest + openFee + closeFee;
     const effRate = borrowAmount > 0 ? (total / borrowAmount) * 100 : 0;
-    return { apr, interest, openFee, openFeeRaw, closeFee, total, effRate, openRate };
+    return {
+      apr,
+      interest,
+      openFee,
+      openFeeRaw,
+      closeFee,
+      total,
+      effRate,
+      openRate,
+    };
   }, [
     borrowAmount,
     collateral,
@@ -312,7 +324,6 @@ export function RatesClient({ data }: { data: RateSeries }) {
 
   return (
     <div className="min-h-screen bg-void-900 text-slate-100 relative overflow-hidden">
-
       {/* Background Decor */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[800px] bg-neon-500/10 blur-[150px] rounded-full -z-10 pointer-events-none" />
 
@@ -330,7 +341,6 @@ export function RatesClient({ data }: { data: RateSeries }) {
             </span>
           </div>
         </div>
-
 
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6 animate-enter delay-200">
           <div className="relative h-14 w-14 shrink-0 transition-transform hover:scale-110 duration-500">
@@ -364,13 +374,10 @@ export function RatesClient({ data }: { data: RateSeries }) {
           </div>
         </header>
 
-
         <div className="space-y-6">
           <GlassCard className="p-4 bg-neon-500/[0.03] animate-enter delay-300">
             <div className="flex flex-wrap items-center gap-4">
-              <span className="label-subtle !text-neon-300">
-                {rangeLabel}
-              </span>
+              <span className="label-subtle !text-neon-300">{rangeLabel}</span>
               {averageCard ? (
                 <>
                   <span className="rounded-full bg-neon-500/10 border border-neon-500/20 px-3 py-1 text-[10px] font-bold text-neon-300 uppercase tracking-widest">
@@ -390,7 +397,6 @@ export function RatesClient({ data }: { data: RateSeries }) {
               )}
             </div>
           </GlassCard>
-
 
           {hasData ? (
             <InterestRateChart
@@ -414,9 +420,7 @@ export function RatesClient({ data }: { data: RateSeries }) {
                   {isZh ? "成本模拟器" : "Cost simulator"}
                 </div>
                 <h3 className="text-lg font-semibold text-emerald-50">
-                  {isZh
-                    ? "fxMINT 总成本预估"
-                    : "Estimate fxMINT total costs"}
+                  {isZh ? "fxMINT 总成本预估" : "Estimate fxMINT total costs"}
                 </h3>
                 <p className="text-xs text-slate-300">
                   {isZh
@@ -436,10 +440,11 @@ export function RatesClient({ data }: { data: RateSeries }) {
                     key={preset.label}
                     type="button"
                     onClick={() => setDays(preset.value)}
-                    className={`rounded-full border px-3 py-1 ${days === preset.value
-                      ? "border-emerald-300 bg-emerald-400/20 text-emerald-50"
-                      : "border-emerald-300/30 text-emerald-100/70 hover:border-emerald-200/60 hover:text-emerald-50"
-                      }`}
+                    className={`rounded-full border px-3 py-1 ${
+                      days === preset.value
+                        ? "border-emerald-300 bg-emerald-400/20 text-emerald-50"
+                        : "border-emerald-300/30 text-emerald-100/70 hover:border-emerald-200/60 hover:text-emerald-50"
+                    }`}
                   >
                     {preset.label}
                   </button>
@@ -479,7 +484,11 @@ export function RatesClient({ data }: { data: RateSeries }) {
                     value={normalizedLtv}
                     onChange={(e) =>
                       setLtv(
-                        clampNumber(Number(e.target.value) || MIN_LTV, MIN_LTV, MAX_LTV),
+                        clampNumber(
+                          Number(e.target.value) || MIN_LTV,
+                          MIN_LTV,
+                          MAX_LTV,
+                        ),
                       )
                     }
                     className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none ring-emerald-400/40 focus:border-emerald-300 focus:ring-2"
@@ -504,29 +513,36 @@ export function RatesClient({ data }: { data: RateSeries }) {
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
                     {(["WBTC", "wstETH"] as Collateral[]).map((asset) => {
                       const info = collateralBreakdown[asset];
-                      const openFeePercent = (feeConfig.open[asset] * 100).toFixed(1);
+                      const openFeePercent = (
+                        feeConfig.open[asset] * 100
+                      ).toFixed(1);
                       const isActive = collateral === asset;
                       return (
                         <button
                           key={asset}
                           type="button"
                           onClick={() => setCollateral(asset)}
-                          className={`w-full rounded-lg border px-3 py-3 text-left transition ${isActive
-                            ? "border-emerald-400/70 bg-slate-950/70"
-                            : "border-slate-800 bg-slate-950/40 hover:border-emerald-300/40"
-                            }`}
+                          className={`w-full rounded-lg border px-3 py-3 text-left transition ${
+                            isActive
+                              ? "border-emerald-400/70 bg-slate-950/70"
+                              : "border-slate-800 bg-slate-950/40 hover:border-emerald-300/40"
+                          }`}
                         >
                           <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-slate-400">
                             <span>{asset}</span>
                             <span>
-                              {info.price ? `${formatCurrency(info.price)} / ${asset}` : "—"}
+                              {info.price
+                                ? `${formatCurrency(info.price)} / ${asset}`
+                                : "—"}
                             </span>
                           </div>
                           <div className="mt-1 text-base font-semibold text-slate-100">
                             {info.tokenAmount ? (
                               <>
                                 {formatTokenAmount(info.tokenAmount)}{" "}
-                                <span className="text-xs text-slate-400">{asset}</span>
+                                <span className="text-xs text-slate-400">
+                                  {asset}
+                                </span>
                               </>
                             ) : (
                               "—"
@@ -562,16 +578,29 @@ export function RatesClient({ data }: { data: RateSeries }) {
                   </div>
                   <div className="mt-2 space-y-2">
                     {[
-                      { label: "fxMINT", value: fxSim.total, color: "bg-emerald-400" },
-                      { label: "Aave", value: aaveSim.total, color: "bg-slate-400" },
+                      {
+                        label: "fxMINT",
+                        value: fxSim.total,
+                        color: "bg-emerald-400",
+                      },
+                      {
+                        label: "Aave",
+                        value: aaveSim.total,
+                        color: "bg-slate-400",
+                      },
                     ].map((item) => {
                       const max = Math.max(fxSim.total, aaveSim.total, 1);
-                      const width = Math.max(4, Math.min(100, (item.value / max) * 100));
+                      const width = Math.max(
+                        4,
+                        Math.min(100, (item.value / max) * 100),
+                      );
                       return (
                         <div key={item.label}>
                           <div className="mb-1 flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-slate-400">
                             <span>{item.label}</span>
-                            <span className="text-slate-200">{formatCurrency(item.value)}</span>
+                            <span className="text-slate-200">
+                              {formatCurrency(item.value)}
+                            </span>
                           </div>
                           <div className="h-2 overflow-hidden rounded-full bg-slate-800">
                             <div
@@ -583,9 +612,13 @@ export function RatesClient({ data }: { data: RateSeries }) {
                       );
                     })}
                     <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-emerald-200">
-                      <span>{isZh ? "使用 fxMINT 额外节省" : "Extra saved vs Aave"}</span>
+                      <span>
+                        {isZh ? "使用 fxMINT 额外节省" : "Extra saved vs Aave"}
+                      </span>
                       <span className="text-emerald-100">
-                        {formatCurrency(Math.max(0, aaveSim.total - fxSim.total))}
+                        {formatCurrency(
+                          Math.max(0, aaveSim.total - fxSim.total),
+                        )}
                       </span>
                     </div>
                   </div>
@@ -705,7 +738,9 @@ export function RatesClient({ data }: { data: RateSeries }) {
               <summary className="flex cursor-pointer items-center justify-between bg-white/[0.03] px-6 py-4 text-sm font-semibold transition hover:bg-white/[0.05]">
                 <div className="flex items-center gap-3">
                   <span className="label-subtle">
-                    {isZh ? "查看当前时间窗的数据" : "View data for current window"}
+                    {isZh
+                      ? "查看当前时间窗的数据"
+                      : "View data for current window"}
                   </span>
                 </div>
                 <span className="label-subtle !text-slate-500">
@@ -724,7 +759,6 @@ export function RatesClient({ data }: { data: RateSeries }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.03]">
-
                     {tableRows.map((row, index) => (
                       <tr
                         key={`${row.protocol}-${row.kind}-${row.date}-${index}`}
@@ -744,10 +778,11 @@ export function RatesClient({ data }: { data: RateSeries }) {
                             {row.parts.map((part) => (
                               <span
                                 key={`${row.date}-${part.label}`}
-                                className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${part.highlight
-                                  ? "bg-neon-500/10 text-neon-300 border border-neon-500/20"
-                                  : "bg-white/5 text-slate-500 border border-white/5"
-                                  }`}
+                                className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                                  part.highlight
+                                    ? "bg-neon-500/10 text-neon-300 border border-neon-500/20"
+                                    : "bg-white/5 text-slate-500 border border-white/5"
+                                }`}
                               >
                                 {part.label}: {part.value}
                               </span>
@@ -768,7 +803,6 @@ export function RatesClient({ data }: { data: RateSeries }) {
               </div>
             </details>
           </GlassCard>
-
 
           <div className="grid gap-4 sm:grid-cols-2">
             <GlassCard className="p-6 animate-enter delay-[800ms]">
@@ -808,7 +842,6 @@ export function RatesClient({ data }: { data: RateSeries }) {
               </p>
             </GlassCard>
           </div>
-
         </div>
       </div>
     </div>

@@ -14,11 +14,18 @@ describe("rates helpers", () => {
       ["2024-01-02", 4],
       ["2024-01-03", 6],
     ]);
-    const merged = _internal.mergeSeries(aave, crv);
+    const fxusd = new Map<string, number>([
+      ["2024-01-01", 1],
+      ["2024-01-03", 3],
+    ]);
+    const merged = _internal.mergeSeries(aave, crv, fxusd);
     assert.strictEqual(merged.length, 3);
+    assert.strictEqual(merged[0].aaveBorrow, 5);
+    assert.strictEqual(merged[0].crvusdAvg, null);
+    assert.strictEqual(merged[0].fxusdBorrow, 1);
     const withMa = _internal.computeMovingAverage(merged, 2);
     assert.strictEqual(withMa[1].aaveMa, 6);
-    assert.strictEqual(withMa[2].crvusdMa, 5);
+    assert.strictEqual(withMa[1].crvusdMa, undefined);
   });
 
   it("parses csv content", () => {

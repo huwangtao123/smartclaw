@@ -1,0 +1,81 @@
+{
+  "name": "fx_protocol_leaderboard",
+  "description": "Near real-time intelligence on f(x) Protocol trading performance. Provides fxUSD borrow rates, top PNL wallet rankings, cross-protocol lending rate comparisons, and premium leaderboard analytics.",
+  "url": "/api/openapi",
+  "version": "1.1.0",
+  "capabilities": [
+    {
+      "id": "getFxusdRate",
+      "description": "Get latest and historical fxUSD borrow APR. Use to check current borrow cost before opening a leveraged position.",
+      "method": "GET",
+      "path": "/api/fxusd-rate",
+      "auth": "none",
+      "parameters": [
+        {
+          "name": "maWindow",
+          "type": "integer",
+          "required": false,
+          "description": "Moving average window in days (default 30)"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "required": false,
+          "description": "Number of historical data points to return"
+        }
+      ]
+    },
+    {
+      "id": "getTopPnl",
+      "description": "Get highest PNL wallets from the f(x) Protocol leaderboard. Use to identify top-performing traders.",
+      "method": "GET",
+      "path": "/api/top-pnl",
+      "auth": "none",
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "required": false,
+          "description": "Max wallets to return (1-100, default 10)"
+        }
+      ]
+    },
+    {
+      "id": "getRates",
+      "description": "Get full lending rate data across Aave, CrvUSD, and fxUSD. Use to compare DeFi borrow rates.",
+      "method": "GET",
+      "path": "/api/rates",
+      "auth": "none",
+      "parameters": [
+        {
+          "name": "maWindow",
+          "type": "integer",
+          "required": false,
+          "description": "Moving average window in days"
+        },
+        {
+          "name": "fallback",
+          "type": "string",
+          "required": false,
+          "description": "Fallback CSV file path"
+        }
+      ]
+    },
+    {
+      "id": "getPremiumMetrics",
+      "description": "Get premium leaderboard metrics with top traders by PNL and ROI. Requires x402 USDC payment.",
+      "method": "GET",
+      "path": "/api/premium",
+      "auth": "x402_cookie"
+    }
+  ],
+  "auth_schemes": {
+    "none": {
+      "description": "No authentication required."
+    },
+    "x402_cookie": {
+      "description": "Pay $0.01 USDC per call via x402 protocol on Base network.",
+      "flow": "POST /api/x402/session-token to initiate checkout, then access premium endpoints with the resulting cookie."
+    }
+  }
+}

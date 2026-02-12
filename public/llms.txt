@@ -1,0 +1,52 @@
+# f(x) Protocol Leaderboard API
+
+> Near real-time intelligence on f(x) Protocol trading performance.
+
+## API Base
+
+https://alidashboard.up.railway.app
+OpenAPI spec: GET /api/openapi
+
+## Public Endpoints (no auth required)
+
+### GET /api/fxusd-rate
+Returns latest and historical fxUSD borrow APR.
+Parameters: maWindow (int, default 30), limit (int, optional)
+Use case: Check current borrow cost before opening a leveraged position.
+
+### GET /api/top-pnl
+Returns highest PNL wallets from the f(x) Protocol leaderboard.
+Parameters: limit (int, 1-100, default 10)
+Use case: Identify top-performing traders for copy-trading analysis.
+
+### GET /api/rates
+Returns full lending rate data across protocols (Aave, CrvUSD, fxUSD).
+Parameters: maWindow (int, optional), fallback (string, optional)
+Use case: Compare borrow rates across DeFi protocols.
+
+## Premium Endpoints (x402 payment required — $1 USDC)
+
+### GET /api/premium
+Returns premium leaderboard metrics: top traders by PNL and ROI.
+Auth: x402 USDC payment → session cookie.
+Use case: Deep analytics on top-performing wallets.
+
+### POST /api/x402/session-token
+Initiates x402 checkout flow for premium access.
+
+## Authentication
+
+Public endpoints require no authentication.
+Premium endpoints use x402 protocol: pay $0.01 USDC per call on Base network.
+
+## Data Sources
+
+- f(x) Protocol leaderboard API (live snapshots)
+- The Graph (fxUSD funding data)
+- Google Apps Script feed (FX volume trends)
+
+## Machine-Readable Specs
+
+- OpenAPI 3.1: /api/openapi
+- Plugin manifest: /.well-known/ai-plugin.json
+- Agent descriptor: /agents.json

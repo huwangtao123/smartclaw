@@ -362,11 +362,11 @@ export function InterestRateChartVisx({
               data={filtered.filter((p) => p.crv !== null)}
               x={(d) => xScale(d.date)}
               y={(d) => yScale(d.crv ?? 0)}
-            stroke={COLORS.crv}
-            strokeWidth={2}
-            curve={undefined}
-          />
-        ) : null}
+              stroke={COLORS.crv}
+              strokeWidth={2}
+              curve={undefined}
+            />
+          ) : null}
           {showFx ? (
             <LinePath
               data={filtered.filter((p) => p.fx !== null)}

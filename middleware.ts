@@ -26,7 +26,7 @@ const parsedPremiumAccessDuration = Number.parseInt(
 );
 const premiumAccessDurationHours =
   Number.isFinite(parsedPremiumAccessDuration) &&
-  parsedPremiumAccessDuration > 0
+    parsedPremiumAccessDuration > 0
     ? parsedPremiumAccessDuration
     : defaultPremiumAccessDurationHours;
 const premiumAccessDurationMs = premiumAccessDurationHours * 60 * 60 * 1000;
@@ -101,11 +101,11 @@ function encodeBase64Url(data: Uint8Array) {
   }
   const nodeBuffer = (globalThis as Record<string, unknown>).Buffer as
     | {
-        from: (
-          input: string,
-          encoding: string,
-        ) => { toString: (encoding: string) => string };
-      }
+      from: (
+        input: string,
+        encoding: string,
+      ) => { toString: (encoding: string) => string };
+    }
     | undefined;
   const base64 =
     typeof btoa === "function"
@@ -113,10 +113,10 @@ function encodeBase64Url(data: Uint8Array) {
       : nodeBuffer?.from
         ? nodeBuffer.from(binary, "binary").toString("base64")
         : (() => {
-            throw new Error(
-              "[premium-access] No base64 encoder available in this environment.",
-            );
-          })();
+          throw new Error(
+            "[premium-access] No base64 encoder available in this environment.",
+          );
+        })();
   return base64.replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/u, "");
 }
 
@@ -126,11 +126,11 @@ function decodeBase64Url(base64Url: string) {
   const base64 = padded + "=".repeat(padLength);
   const nodeBuffer = (globalThis as Record<string, unknown>).Buffer as
     | {
-        from: (
-          input: string,
-          encoding: string,
-        ) => { toString: (encoding: string) => string };
-      }
+      from: (
+        input: string,
+        encoding: string,
+      ) => { toString: (encoding: string) => string };
+    }
     | undefined;
   const binary =
     typeof atob === "function"
@@ -138,10 +138,10 @@ function decodeBase64Url(base64Url: string) {
       : nodeBuffer?.from
         ? nodeBuffer.from(base64, "base64").toString("binary")
         : (() => {
-            throw new Error(
-              "[premium-access] No base64 decoder available in this environment.",
-            );
-          })();
+          throw new Error(
+            "[premium-access] No base64 decoder available in this environment.",
+          );
+        })();
   const output = new Uint8Array(binary.length);
   for (let index = 0; index < binary.length; index += 1) {
     output[index] = binary.charCodeAt(index);
@@ -273,7 +273,7 @@ if (!facilitatorUrl) {
 
 const routes: RoutesConfig = {
   "/premium": {
-    price: "$1",
+    price: "$0.01",
     network: rawNetwork,
     config: {
       description: "Access AliDashboard premium leaderboard insights",
@@ -281,7 +281,7 @@ const routes: RoutesConfig = {
     },
   },
   "/api/premium": {
-    price: "$1",
+    price: "$0.01",
     network: rawNetwork,
     config: {
       description: "Access AliDashboard premium leaderboard API",
@@ -295,33 +295,33 @@ const routes: RoutesConfig = {
 const configuredMiddleware =
   payTo && facilitatorUrl
     ? paymentMiddleware(
-        payTo,
-        routes,
-        {
-          url: facilitatorUrl,
-        },
-        {
-          appName: "AliDashboard Premium",
-          appLogo: "/fx-protocol-icon.svg",
-          ...(cdpKeyId && cdpKeySecret
-            ? {
-                sessionTokenEndpoint: "/api/x402/session-token",
-              }
-            : {}),
-        },
-      )
+      payTo,
+      routes,
+      {
+        url: facilitatorUrl,
+      },
+      {
+        appName: "AliDashboard Premium",
+        appLogo: "/fx-protocol-icon.svg",
+        ...(cdpKeyId && cdpKeySecret
+          ? {
+            sessionTokenEndpoint: "/api/x402/session-token",
+          }
+          : {}),
+      },
+    )
     : async (_request: NextRequest) =>
-        new NextResponse(
-          JSON.stringify({
-            error: payTo
-              ? "NEXT_PUBLIC_FACILITATOR_URL is not configured for the selected X402 network"
-              : "RESOURCE_WALLET_ADDRESS is not configured",
-          }),
-          {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          },
-        );
+      new NextResponse(
+        JSON.stringify({
+          error: payTo
+            ? "NEXT_PUBLIC_FACILITATOR_URL is not configured for the selected X402 network"
+            : "RESOURCE_WALLET_ADDRESS is not configured",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
 
 export async function middleware(request: NextRequest) {
   const isPrefetch =
@@ -425,13 +425,13 @@ export async function middleware(request: NextRequest) {
         ...payload,
         accepts: Array.isArray(payload?.accepts)
           ? payload.accepts.map((item: Record<string, unknown>) =>
-              item && typeof item === "object"
-                ? {
-                    ...item,
-                    resource: computedResource,
-                  }
-                : item,
-            )
+            item && typeof item === "object"
+              ? {
+                ...item,
+                resource: computedResource,
+              }
+              : item,
+          )
           : payload?.accepts,
       };
 

@@ -71,11 +71,45 @@ If you host on GitHub, you can use the `prepare-data.yml` workflow to refresh da
 
 ---
 
+## AI Agent Integration
+
+This project exposes machine-readable discovery files so AI agents can find and use the API automatically:
+
+| File             | URL                           | Purpose                                          |
+| ---------------- | ----------------------------- | ------------------------------------------------ |
+| `llms.txt`       | `/llms.txt`                   | Plain-text summary of all endpoints — start here |
+| `ai-plugin.json` | `/.well-known/ai-plugin.json` | ChatGPT / OpenAI plugin manifest                 |
+| `agents.json`    | `/agents.json`                | Wildcard agent descriptor with capabilities      |
+| OpenAPI 3.1      | `/api/openapi`                | Full machine-readable spec with schemas          |
+
+All public endpoints include `operationId` fields that agents can use as function names:
+- `getFxusdRate` – fxUSD borrow APR
+- `getTopPnl` – top PNL wallets
+- `getRates` – cross-protocol lending rate comparison
+- `getPremiumMetrics` – premium leaderboard (x402 paywall)
+- `createX402SessionToken` – initiate premium checkout
+
+### Use as an Agent Skill
+
+The project includes a `SKILL.md` file that any OpenClaw, Claude Code, or Cursor agent can install directly. It provides natural-language instructions and `curl` examples for every endpoint.
+
+To use it from another agent, point at the raw file:
+
+```
+# OpenClaw
+openclaw skill add https://raw.githubusercontent.com/huwangtao123/aicharts/main/SKILL.md
+
+# Or copy SKILL.md into your agent's .agent/skills/ directory
+```
+
+---
+
 ## Premium Access Configuration
 
-Premium paywall sessions last for 72 hours by default. You can tweak this behaviour through the following environment variables:
+Premium endpoints are gated behind x402 at $0.01 USDC per call on Base network. Configure the following environment variables:
 
-- `PREMIUM_ACCESS_DURATION_HOURS` – positive integer that sets how long premium content stays unlocked after a successful payment; defaults to `72`.
 - `PREMIUM_ACCESS_SECRET` – required secret used to sign the premium-access cookie; rotate if compromised.
+- `RESOURCE_WALLET_ADDRESS` – wallet address that receives payments.
+- `X402_NETWORK` – blockchain network (default: `base`).
 
-Both `/premium` and `/api/premium` honor this window. Update your environment and restart the app after changing either value.
+Both `/premium` and `/api/premium` use this configuration. Update your environment and restart the app after changing values.

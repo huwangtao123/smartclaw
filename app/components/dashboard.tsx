@@ -9,7 +9,6 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowingStat } from "@/components/ui/GlowingStat";
 import { NeonProgress } from "@/components/ui/NeonProgress";
 
-
 type Language = "en" | "zh";
 
 function formatPercent(value: number, fractionDigits = 1) {
@@ -65,8 +64,8 @@ function LanguageToggle({
               type="button"
               onClick={() => onChange(code)}
               className={`rounded-full px-3 py-1 transition ${isActive
-                ? "bg-emerald-400 text-slate-900"
-                : "hover:bg-slate-800/80 hover:text-slate-100"
+                  ? "bg-emerald-400 text-slate-900"
+                  : "hover:bg-slate-800/80 hover:text-slate-100"
                 }`}
             >
               {label}
@@ -188,13 +187,12 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
           </p>
         </header>
 
-
         <div className="rounded-3xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-4 text-sm text-emerald-50 sm:flex sm:items-center sm:justify-between">
           <div className="max-w-2xl">
             {isZh ? (
               <>
                 支付{" "}
-                <span className="font-semibold text-emerald-200">$1 USDC</span>
+                <span className="font-semibold text-emerald-200">$0.01 USDC</span>
                 （通过 x402 支付流） 解锁完整的 PNL 与 ROI
                 前十名钱包、净额与动能脉冲。
               </>
@@ -202,7 +200,7 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
               <>
                 Unlock the full Top 10 PNL and ROI cohorts, complete with net
                 flow context, for{" "}
-                <span className="font-semibold text-emerald-200">$1 USDC</span>{" "}
+                <span className="font-semibold text-emerald-200">$0.01 USDC</span>{" "}
                 using the x402 payment flow.
               </>
             )}
@@ -365,7 +363,6 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
           </div>
         </section>
 
-
         <section className="grid gap-6 lg:grid-cols-2">
           <GlassCard className="p-6 animate-enter delay-500">
             <header className="flex items-center justify-between">
@@ -397,7 +394,9 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
                   </span>
                   <span>
                     {isZh ? "净利润" : "Net PNL"}:{" "}
-                    <span className="text-neon-400">{formatCurrency(getPnl(topWinner))}</span>
+                    <span className="text-neon-400">
+                      {formatCurrency(getPnl(topWinner))}
+                    </span>
                   </span>
                   <span>
                     {isZh ? "成交量" : "Volume"}:{" "}
@@ -416,8 +415,8 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
               </div>
               <p className="mt-2 text-xs text-slate-400">
                 {isZh
-                  ? "支付 $1 USDC（x402）后，可查看完整前十名 PNL 钱包与详尽资金流向。"
-                  : "Pay $1 USDC via x402 to reveal the complete top 10 PNL wallets and capital flows."}
+                  ? "支付 $0.01 USDC（x402）后，可查看完整前十名 PNL 钱包与详尽资金流向。"
+                  : "Pay $0.01 USDC via x402 to reveal the complete top 10 PNL wallets and capital flows."}
               </p>
               <Link
                 href="/premium"
@@ -457,7 +456,10 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
                     </a>
                   </span>
                   <span>
-                    ROI: <span className="text-neon-400">{formatPercent((topRoiLeader.roi ?? 0) / 100, 1)}</span>
+                    ROI:{" "}
+                    <span className="text-neon-400">
+                      {formatPercent((topRoiLeader.roi ?? 0) / 100, 1)}
+                    </span>
                   </span>
                   <span>
                     {isZh ? "成交量" : "Volume"}:{" "}
@@ -476,8 +478,8 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
               </div>
               <p className="mt-2 text-xs text-slate-400">
                 {isZh
-                  ? "支付 $1 USDC（x402）可解锁完整前十 ROI 地址、净额与交易节奏。"
-                  : "Unlock for $1 USDC via x402 to access the full top 10 ROI wallets with granular net flows."}
+                  ? "支付 $0.01 USDC（x402）可解锁完整前十 ROI 地址、净额与交易节奏。"
+                  : "Unlock for $0.01 USDC via x402 to access the full top 10 ROI wallets with granular net flows."}
               </p>
               <Link
                 href="/premium"
@@ -488,7 +490,6 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
             </div>
           </GlassCard>
         </section>
-
 
         <section className="animate-enter delay-700">
           <GlassCard className="p-8 bg-gradient-to-br from-void-800 to-neon-500/5">
