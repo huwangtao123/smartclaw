@@ -53,7 +53,7 @@ Parameters:
 curl "https://alidashboard.up.railway.app/api/premium" -b "aicharts-premium-access=COOKIE_VALUE"
 ```
 
-Returns top traders by PNL and ROI. Requires x402 payment ($1 USDC on Base).
+Returns top traders by PNL and ROI. Requires x402 payment ($0.01 USDC on Base).
 
 ## Paying for Premium Endpoints
 
