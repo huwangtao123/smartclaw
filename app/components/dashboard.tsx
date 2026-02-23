@@ -64,8 +64,8 @@ function LanguageToggle({
               type="button"
               onClick={() => onChange(code)}
               className={`rounded-full px-3 py-1 transition ${isActive
-                  ? "bg-emerald-400 text-slate-900"
-                  : "hover:bg-slate-800/80 hover:text-slate-100"
+                ? "bg-emerald-400 text-slate-900"
+                : "hover:bg-slate-800/80 hover:text-slate-100"
                 }`}
             >
               {label}
@@ -422,7 +422,7 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
                 href="/premium"
                 className="mt-4 w-full inline-flex items-center justify-center rounded-lg bg-neon-500 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-void-900 transition hover:bg-neon-400 active:scale-95"
               >
-                {isZh ? "立即解锁" : "Unlock for $1"}
+                {isZh ? "立即解锁" : "Unlock for $0.01"}
               </Link>
             </div>
           </GlassCard>
@@ -485,7 +485,7 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
                 href="/premium"
                 className="mt-4 w-full inline-flex items-center justify-center rounded-lg bg-neon-500 px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] text-void-900 transition hover:bg-neon-400 active:scale-95"
               >
-                {isZh ? "立即解锁" : "Unlock for $1"}
+                {isZh ? "立即解锁" : "Unlock for $0.01"}
               </Link>
             </div>
           </GlassCard>

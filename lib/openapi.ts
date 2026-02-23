@@ -452,7 +452,7 @@ const endpointDefinitions: EndpointDefinition[] = [
       tags: ["Premium"],
       summary: "Premium leaderboard metrics",
       description:
-        "Returns premium leaderboard insights including top traders by PNL and ROI. Requires x402 USDC payment ($1 on Base network). Requests without a premium cookie receive a 402 payment required response.",
+        "Returns premium leaderboard insights including top traders by PNL and ROI. Requires x402 USDC payment ($0.01 on Base network). Requests without a premium cookie receive a 402 payment required response.",
       security: [
         {
           PremiumAccessCookie: [],
@@ -571,7 +571,7 @@ export function buildOpenApiDocument() {
       {
         name: "Premium",
         description:
-          "Endpoints gated behind an x402 USDC paywall ($1 on Base network). Requires explicit user consent before payment.",
+          "Endpoints gated behind an x402 USDC paywall ($0.01 on Base network). Requires explicit user consent before payment.",
       },
       {
         name: "Internal",

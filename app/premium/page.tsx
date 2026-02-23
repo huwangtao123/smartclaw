@@ -80,15 +80,15 @@ export default async function PremiumPage() {
 
   const lastVolumeEntryLabel = lastVolumeTimestamp
     ? new Intl.DateTimeFormat("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-        timeZone: "UTC",
-      }).format(new Date(lastVolumeTimestamp))
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+      timeZone: "UTC",
+    }).format(new Date(lastVolumeTimestamp))
     : null;
 
   return (
@@ -102,13 +102,13 @@ export default async function PremiumPage() {
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-3xl">
               <div className="label-subtle !text-neon-300">
-                x402 Unlock · $1 Unlocks Top 10 PNL · ROI · Volume
+                x402 Unlock · $0.01 Unlocks Top 10 PNL · ROI · Volume
               </div>
               <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl">
                 Premium Leaderboard Intelligence
               </h1>
               <p className="mt-4 text-sm text-slate-400 sm:text-base leading-relaxed">
-                Your $1 unlock delivers the complete top 10 PNL and ROI roster
+                Your $0.01 unlock delivers the complete top 10 PNL and ROI roster
                 plus live transaction volume diagrams, letting you dissect
                 capital deployment and directional conviction before the next
                 rotation.

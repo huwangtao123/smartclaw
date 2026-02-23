@@ -257,7 +257,7 @@ const facilitatorUrl =
     ? (facilitatorEnv as Resource)
     : rawNetwork === "base"
       ? null
-      : ("https://x402.org/facilitator" as Resource);
+      : ("https://facilitator.heurist.xyz" as Resource);
 
 if (!payTo) {
   console.warn(

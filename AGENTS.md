@@ -11,13 +11,13 @@ This project exposes a set of APIs for f(x) Protocol trading intelligence. AI ag
 
 ## Quick Reference
 
-| operationId              | Endpoint                       | Auth           |
-| ------------------------ | ------------------------------ | -------------- |
-| `getFxusdRate`           | `GET /api/fxusd-rate`          | None           |
-| `getTopPnl`              | `GET /api/top-pnl`             | None           |
-| `getRates`               | `GET /api/rates`               | None           |
-| `getPremiumMetrics`      | `GET /api/premium`             | x402 ($1 USDC) |
-| `createX402SessionToken` | `POST /api/x402/session-token` | None           |
+| operationId              | Endpoint                       | Auth              |
+| ------------------------ | ------------------------------ | ----------------- |
+| `getFxusdRate`           | `GET /api/fxusd-rate`          | None              |
+| `getTopPnl`              | `GET /api/top-pnl`             | None              |
+| `getRates`               | `GET /api/rates`               | None              |
+| `getPremiumMetrics`      | `GET /api/premium`             | x402 ($0.01 USDC) |
+| `createX402SessionToken` | `POST /api/x402/session-token` | None              |
 
 ## Guidelines
 

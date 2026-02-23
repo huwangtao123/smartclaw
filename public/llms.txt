@@ -24,7 +24,7 @@ Returns full lending rate data across protocols (Aave, CrvUSD, fxUSD).
 Parameters: maWindow (int, optional), fallback (string, optional)
 Use case: Compare borrow rates across DeFi protocols.
 
-## Premium Endpoints (x402 payment required — $1 USDC)
+## Premium Endpoints (x402 payment required — $0.01 USDC)
 
 ### GET /api/premium
 Returns premium leaderboard metrics: top traders by PNL and ROI.
