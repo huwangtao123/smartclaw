@@ -29,7 +29,8 @@ function buildServers() {
 
 const traderSchema = {
   type: "object",
-  description: "Leaderboard entry sourced from the f(x) Protocol snapshot.",
+  description:
+    "Smart wallet entry from a protocol leaderboard. Currently sourced from f(x) Protocol.",
   properties: {
     rank: {
       type: "integer",
@@ -86,6 +87,19 @@ const components: Components = {
         meta: {
           type: "object",
           properties: {
+            protocol: {
+              type: "string",
+              description:
+                "Protocol identifier (e.g. 'fx'). Present on protocol-specific endpoints.",
+              example: "fx",
+            },
+            protocols: {
+              type: "array",
+              description:
+                "List of protocols included in the aggregate response.",
+              items: { type: "string" },
+              example: ["fx"],
+            },
             limit: {
               type: "integer",
               description: "Requested result limit.",
@@ -118,6 +132,11 @@ const components: Components = {
             "Version of the x402 payment configuration that granted access.",
           example: 1,
         },
+        protocol: {
+          type: "string",
+          description: "Protocol identifier for this response.",
+          example: "fx",
+        },
         topByPnl: {
           type: "array",
           description:
@@ -139,7 +158,13 @@ const components: Components = {
           description: "Timestamp when the metrics snapshot was produced.",
         },
       },
-      required: ["x402Version", "topByPnl", "topByRoi", "generatedAt"],
+      required: [
+        "x402Version",
+        "protocol",
+        "topByPnl",
+        "topByRoi",
+        "generatedAt",
+      ],
       additionalProperties: false,
     },
     FxUsdRate: {
@@ -178,6 +203,11 @@ const components: Components = {
         meta: {
           type: "object",
           properties: {
+            protocol: {
+              type: "string",
+              description: "Protocol identifier.",
+              example: "fx",
+            },
             maWindow: {
               type: "integer",
               description:
@@ -295,16 +325,101 @@ const components: Components = {
 };
 
 const endpointDefinitions: EndpointDefinition[] = [
+  /* ── Global Aggregate ── */
   {
-    path: "/api/fxusd-rate",
+    path: "/api/top-pnl",
     method: "get",
     operation: {
-      operationId: "getFxusdRate",
+      operationId: "getTopPnl",
       "x-openai-isConsequential": false,
-      tags: ["Public"],
+      tags: ["Global"],
+      summary: "Top PNL wallets (all protocols)",
+      description:
+        "Returns the highest PNL wallets aggregated across all integrated protocols. Each entry includes a 'protocol' field indicating the source. Currently includes f(x) Protocol; Perp DEX and Meme Coin integrations coming soon.",
+      parameters: [
+        {
+          name: "limit",
+          in: "query",
+          description: "Maximum number of wallets to return (1-100).",
+          required: false,
+          schema: {
+            type: "integer",
+            minimum: 1,
+            maximum: 100,
+            default: 10,
+          },
+        },
+      ],
+      responses: {
+        "200": {
+          description: "Aggregated list of top PNL wallets across protocols.",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/TopPnlResponse",
+              },
+            },
+          },
+        },
+        "500": {
+          $ref: "#/components/responses/ServerError",
+        },
+      },
+    },
+  },
+
+  /* ── f(x) Protocol ── */
+  {
+    path: "/api/fx/top-pnl",
+    method: "get",
+    operation: {
+      operationId: "getFxTopPnl",
+      "x-openai-isConsequential": false,
+      tags: ["f(x) Protocol"],
+      summary: "Top PNL wallets (f(x) Protocol)",
+      description:
+        "Returns the highest cleaned-PNL wallets from the f(x) Protocol leaderboard snapshot. Use this to identify top-performing traders within the f(x) Protocol for copy-trading analysis.",
+      parameters: [
+        {
+          name: "limit",
+          in: "query",
+          description: "Maximum number of wallets to return (1-100).",
+          required: false,
+          schema: {
+            type: "integer",
+            minimum: 1,
+            maximum: 100,
+            default: 10,
+          },
+        },
+      ],
+      responses: {
+        "200": {
+          description: "List of top PNL wallets from f(x) Protocol.",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/TopPnlResponse",
+              },
+            },
+          },
+        },
+        "500": {
+          $ref: "#/components/responses/ServerError",
+        },
+      },
+    },
+  },
+  {
+    path: "/api/fx/fxusd-rate",
+    method: "get",
+    operation: {
+      operationId: "getFxFxusdRate",
+      "x-openai-isConsequential": false,
+      tags: ["f(x) Protocol"],
       summary: "fxUSD borrow rates",
       description:
-        "Returns the latest and historical fxUSD borrow APR. Data is sourced from f(x) Protocol funding windows. Use this to check the current borrow cost before opening a leveraged position or to track rate trends over time.",
+        "Returns the latest and historical fxUSD borrow APR from f(x) Protocol funding windows. Use this to check the current borrow cost before opening a leveraged position or to track rate trends over time.",
       parameters: [
         {
           name: "maWindow",
@@ -349,36 +464,53 @@ const endpointDefinitions: EndpointDefinition[] = [
     },
   },
   {
-    path: "/api/top-pnl",
+    path: "/api/fx/status",
     method: "get",
     operation: {
-      operationId: "getTopPnl",
+      operationId: "getFxStatus",
       "x-openai-isConsequential": false,
-      tags: ["Public"],
-      summary: "Top PNL wallets",
+      tags: ["f(x) Protocol"],
+      summary: "f(x) Protocol status overview",
       description:
-        "Returns the highest cleaned-PNL wallets from the latest f(x) Protocol leaderboard snapshot. Data is refreshed on each request. Use this to identify top-performing traders for copy-trading analysis or market intelligence.",
-      parameters: [
-        {
-          name: "limit",
-          in: "query",
-          description: "Maximum number of wallets to return (1-100).",
-          required: false,
-          schema: {
-            type: "integer",
-            minimum: 1,
-            maximum: 100,
-            default: 10,
-          },
-        },
-      ],
+        "Returns a snapshot of the f(x) Protocol leaderboard status: tracked wallets, winners, win rates, total volume, PNL, average ROI, and momentum indicators.",
       responses: {
         "200": {
-          description: "List of top PNL wallets.",
+          description: "f(x) Protocol status overview.",
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/TopPnlResponse",
+                type: "object",
+                properties: {
+                  protocol: { type: "string", example: "fx" },
+                  trackedWallets: { type: "integer", example: 1727 },
+                  winners: { type: "integer", example: 440 },
+                  losers: { type: "integer", example: 1287 },
+                  winRate: { type: "number", example: 25.48 },
+                  weightedWinRate: { type: "number", example: 35.5 },
+                  totalVolume: { type: "number", example: 1200000000 },
+                  totalPnl: { type: "number", example: 5000000 },
+                  avgRoi: { type: "number", example: 12.5 },
+                  netMomentumShare: { type: "number", example: 4.2 },
+                  hasMajorityMomentum: { type: "boolean", example: false },
+                  generatedAt: {
+                    type: "string",
+                    format: "date-time",
+                  },
+                },
+                required: [
+                  "protocol",
+                  "trackedWallets",
+                  "winners",
+                  "losers",
+                  "winRate",
+                  "weightedWinRate",
+                  "totalVolume",
+                  "totalPnl",
+                  "avgRoi",
+                  "netMomentumShare",
+                  "hasMajorityMomentum",
+                  "generatedAt",
+                ],
               },
             },
           },
@@ -390,12 +522,50 @@ const endpointDefinitions: EndpointDefinition[] = [
     },
   },
   {
+    path: "/api/premium",
+    method: "get",
+    operation: {
+      operationId: "getPremiumMetrics",
+      "x-openai-isConsequential": false,
+      tags: ["Premium", "f(x) Protocol"],
+      summary: "Premium f(x) Protocol leaderboard metrics",
+      description:
+        "Returns premium leaderboard insights for f(x) Protocol including top traders by PNL and ROI. Requires x402 USDC payment ($0.01 on Base network). Requests without a premium cookie receive a 402 payment required response.",
+      security: [
+        {
+          PremiumAccessCookie: [],
+        },
+      ],
+      responses: {
+        "200": {
+          description:
+            "Premium f(x) Protocol leaderboard metrics for authenticated users.",
+          content: {
+            "application/json": {
+              schema: {
+                $ref: "#/components/schemas/PremiumMetricsResponse",
+              },
+            },
+          },
+        },
+        "401": {
+          $ref: "#/components/responses/Unauthorized",
+        },
+        "402": {
+          $ref: "#/components/responses/PaymentRequired",
+        },
+      },
+    },
+  },
+
+  /* ── Rates (cross-protocol) ── */
+  {
     path: "/api/rates",
     method: "get",
     operation: {
       operationId: "getRates",
       "x-openai-isConsequential": false,
-      tags: ["Public"],
+      tags: ["Rates"],
       summary: "Cross-protocol lending rates",
       description:
         "Returns full lending rate data across Aave, CrvUSD, and fxUSD with optional moving averages. Use this to compare DeFi borrow rates across protocols and find the cheapest borrowing option.",
@@ -443,41 +613,8 @@ const endpointDefinitions: EndpointDefinition[] = [
       },
     },
   },
-  {
-    path: "/api/premium",
-    method: "get",
-    operation: {
-      operationId: "getPremiumMetrics",
-      "x-openai-isConsequential": false,
-      tags: ["Premium"],
-      summary: "Premium leaderboard metrics",
-      description:
-        "Returns premium leaderboard insights including top traders by PNL and ROI. Requires x402 USDC payment ($0.01 on Base network). Requests without a premium cookie receive a 402 payment required response.",
-      security: [
-        {
-          PremiumAccessCookie: [],
-        },
-      ],
-      responses: {
-        "200": {
-          description: "Premium leaderboard metrics for authenticated users.",
-          content: {
-            "application/json": {
-              schema: {
-                $ref: "#/components/schemas/PremiumMetricsResponse",
-              },
-            },
-          },
-        },
-        "401": {
-          $ref: "#/components/responses/Unauthorized",
-        },
-        "402": {
-          $ref: "#/components/responses/PaymentRequired",
-        },
-      },
-    },
-  },
+
+  /* ── Payment Infrastructure ── */
   {
     path: "/api/x402/session-token",
     method: "post",
@@ -507,13 +644,15 @@ const endpointDefinitions: EndpointDefinition[] = [
       },
     },
   },
+
+  /* ── Discovery ── */
   {
     path: "/api/openapi",
     method: "get",
     operation: {
       operationId: "getOpenApiSpec",
       "x-openai-isConsequential": false,
-      tags: ["Internal"],
+      tags: ["Discovery"],
       summary: "Current OpenAPI document",
       description:
         "Returns the OpenAPI 3.1 document describing every live API endpoint exposed by this deployment. Agents should read this first to understand available operations.",
@@ -552,10 +691,10 @@ export function buildOpenApiDocument() {
   return {
     openapi: "3.1.0",
     info: {
-      title: "f(x) Protocol Leaderboard API",
-      version: "1.2.0",
+      title: "Smartflow API",
+      version: "2.0.0",
       description:
-        "Programmatic access to the f(x) Protocol leaderboard insights, including both public and premium datasets. AI agents: start with /llms.txt for a quick overview, or read this full spec for detailed schemas.",
+        "Cross-protocol smart wallet tracking API. Aggregate PNL, ROI, and capital flow signals across protocol leaderboards. f(x) Protocol is the first integrated source, with Perp DEX and Meme Coin integrations coming soon.",
     },
     externalDocs: {
       description: "AI-friendly summary of available capabilities",
@@ -564,9 +703,19 @@ export function buildOpenApiDocument() {
     servers: buildServers(),
     tags: [
       {
-        name: "Public",
+        name: "Global",
         description:
-          "Endpoints that can be called without authentication. Safe for agents to call automatically.",
+          "Aggregated endpoints that merge data across all integrated protocols.",
+      },
+      {
+        name: "f(x) Protocol",
+        description:
+          "Endpoints sourced specifically from f(x) Protocol leaderboard data.",
+      },
+      {
+        name: "Rates",
+        description:
+          "Cross-protocol lending rate comparison (fxUSD, Aave, crvUSD).",
       },
       {
         name: "Premium",
@@ -574,8 +723,9 @@ export function buildOpenApiDocument() {
           "Endpoints gated behind an x402 USDC paywall ($0.01 on Base network). Requires explicit user consent before payment.",
       },
       {
-        name: "Internal",
-        description: "Supporting endpoints that assist API discovery.",
+        name: "Discovery",
+        description:
+          "API introspection and machine-readable specification endpoints.",
       },
     ],
     paths: buildPaths(),

@@ -1,23 +1,37 @@
-# f(x) Protocol Leaderboard API
+# Smartflow API
 
-> Near real-time intelligence on f(x) Protocol trading performance.
+> Cross-protocol smart wallet tracking. Aggregate PNL, ROI, and capital flow signals across protocol leaderboards.
 
 ## API Base
 
 https://alidashboard.up.railway.app
 OpenAPI spec: GET /api/openapi
 
-## Public Endpoints (no auth required)
-
-### GET /api/fxusd-rate
-Returns latest and historical fxUSD borrow APR.
-Parameters: maWindow (int, default 30), limit (int, optional)
-Use case: Check current borrow cost before opening a leveraged position.
+## Global Endpoints (no auth required)
 
 ### GET /api/top-pnl
+Returns highest PNL wallets aggregated across all integrated protocols.
+Parameters: limit (int, 1-100, default 10)
+Use case: Identify top-performing wallets across all tracked protocols.
+
+## f(x) Protocol Endpoints (no auth required)
+
+### GET /api/fx/top-pnl
 Returns highest PNL wallets from the f(x) Protocol leaderboard.
 Parameters: limit (int, 1-100, default 10)
-Use case: Identify top-performing traders for copy-trading analysis.
+Use case: Identify top-performing traders within f(x) Protocol.
+
+### GET /api/fx/status
+Returns protocol overview: tracked wallets, winners, win rates, volume, PNL, ROI.
+No parameters required.
+Use case: Quick snapshot of f(x) Protocol leaderboard health.
+
+### GET /api/fx/fxusd-rate
+Returns latest and historical fxUSD borrow APR.
+Parameters: maWindow (int, default 30), limit (int, optional)
+Use case: Check current fxUSD borrow cost before opening a leveraged position.
+
+## Cross-Protocol Rates (no auth required)
 
 ### GET /api/rates
 Returns full lending rate data across protocols (Aave, CrvUSD, fxUSD).
@@ -27,16 +41,16 @@ Use case: Compare borrow rates across DeFi protocols.
 ## Premium Endpoints (x402 payment required — $0.01 USDC)
 
 ### GET /api/premium
-Returns premium leaderboard metrics: top traders by PNL and ROI.
+Returns premium f(x) Protocol leaderboard metrics: top traders by PNL and ROI.
 Auth: x402 USDC payment → session cookie.
-Use case: Deep analytics on top-performing wallets.
+Use case: Deep analytics on top-performing f(x) Protocol wallets.
 
 ### POST /api/x402/session-token
 Initiates x402 checkout flow for premium access.
 
 ## Authentication
 
-Public endpoints require no authentication.
+Public and f(x) Protocol endpoints require no authentication.
 Premium endpoints use x402 protocol: pay $0.01 USDC per call on Base network.
 
 ## Data Sources
@@ -44,6 +58,11 @@ Premium endpoints use x402 protocol: pay $0.01 USDC per call on Base network.
 - f(x) Protocol leaderboard API (live snapshots)
 - The Graph (fxUSD funding data)
 - Google Apps Script feed (FX volume trends)
+
+## Coming Soon
+
+- **Perp DEX**: endpoints at `/api/perp/...`
+- **Meme Coins**: endpoints at `/api/meme/...`
 
 ## Machine-Readable Specs
 

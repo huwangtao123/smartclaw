@@ -12,10 +12,14 @@ describe("llms.txt", () => {
         assert.ok(content.startsWith("# "));
     });
 
-    it("mentions all public endpoints", () => {
-        assert.ok(content.includes("/api/fxusd-rate"));
-        assert.ok(content.includes("/api/top-pnl"));
+    it("mentions all protocol-specific endpoints", () => {
+        assert.ok(content.includes("/api/fx/fxusd-rate"));
+        assert.ok(content.includes("/api/fx/top-pnl"));
         assert.ok(content.includes("/api/rates"));
+    });
+
+    it("mentions global aggregate endpoint", () => {
+        assert.ok(content.includes("GET /api/top-pnl"));
     });
 
     it("mentions premium endpoint", () => {
@@ -47,14 +51,18 @@ describe("ai-plugin.json", () => {
         assert.ok(plugin.name_for_model);
     });
 
+    it("uses smartflow branding", () => {
+        assert.strictEqual(plugin.name_for_model, "smartflow");
+    });
+
     it("has descriptions for both human and model", () => {
         assert.ok(plugin.description_for_human.length > 10);
         assert.ok(plugin.description_for_model.length > 10);
     });
 
     it("model description mentions operationIds", () => {
-        assert.ok(plugin.description_for_model.includes("getFxusdRate"));
         assert.ok(plugin.description_for_model.includes("getTopPnl"));
+        assert.ok(plugin.description_for_model.includes("getFxTopPnl"));
         assert.ok(plugin.description_for_model.includes("getRates"));
     });
 
@@ -82,13 +90,17 @@ describe("agents.json", () => {
         assert.ok(agents.description.length > 10);
     });
 
+    it("uses smartflow branding", () => {
+        assert.strictEqual(agents.name, "smartflow");
+    });
+
     it("has version", () => {
         assert.ok(agents.version);
     });
 
     it("has capabilities array", () => {
         assert.ok(Array.isArray(agents.capabilities));
-        assert.ok(agents.capabilities.length >= 4);
+        assert.ok(agents.capabilities.length >= 6);
     });
 
     it("capabilities have required fields", () => {
@@ -105,8 +117,10 @@ describe("agents.json", () => {
         const ids = agents.capabilities.map(
             (c: Record<string, string>) => c.id,
         );
-        assert.ok(ids.includes("getFxusdRate"));
         assert.ok(ids.includes("getTopPnl"));
+        assert.ok(ids.includes("getFxTopPnl"));
+        assert.ok(ids.includes("getFxStatus"));
+        assert.ok(ids.includes("getFxFxusdRate"));
         assert.ok(ids.includes("getRates"));
         assert.ok(ids.includes("getPremiumMetrics"));
     });

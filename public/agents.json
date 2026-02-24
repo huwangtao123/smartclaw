@@ -1,14 +1,51 @@
 {
-  "name": "fx_protocol_leaderboard",
-  "description": "Near real-time intelligence on f(x) Protocol trading performance. Provides fxUSD borrow rates, top PNL wallet rankings, cross-protocol lending rate comparisons, and premium leaderboard analytics.",
+  "name": "smartflow",
+  "description": "Cross-protocol smart wallet tracking API. Aggregates PNL, ROI, and capital flow signals across protocol leaderboards. f(x) Protocol is the first integrated source, with Perp DEX and Meme Coin integrations coming soon.",
   "url": "/api/openapi",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "capabilities": [
     {
-      "id": "getFxusdRate",
-      "description": "Get latest and historical fxUSD borrow APR. Use to check current borrow cost before opening a leveraged position.",
+      "id": "getTopPnl",
+      "description": "Get highest PNL wallets aggregated across all integrated protocols. Use to identify top-performing wallets globally.",
       "method": "GET",
-      "path": "/api/fxusd-rate",
+      "path": "/api/top-pnl",
+      "auth": "none",
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "required": false,
+          "description": "Max wallets to return (1-100, default 10)"
+        }
+      ]
+    },
+    {
+      "id": "getFxTopPnl",
+      "description": "Get highest PNL wallets from the f(x) Protocol leaderboard. Use to identify top-performing traders within f(x).",
+      "method": "GET",
+      "path": "/api/fx/top-pnl",
+      "auth": "none",
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "required": false,
+          "description": "Max wallets to return (1-100, default 10)"
+        }
+      ]
+    },
+    {
+      "id": "getFxStatus",
+      "description": "Get f(x) Protocol status overview: tracked wallets, winners, win rates, volume, PNL, and momentum.",
+      "method": "GET",
+      "path": "/api/fx/status",
+      "auth": "none"
+    },
+    {
+      "id": "getFxFxusdRate",
+      "description": "Get latest and historical fxUSD borrow APR from f(x) Protocol. Use to check current borrow cost.",
+      "method": "GET",
+      "path": "/api/fx/fxusd-rate",
       "auth": "none",
       "parameters": [
         {
@@ -22,21 +59,6 @@
           "type": "integer",
           "required": false,
           "description": "Number of historical data points to return"
-        }
-      ]
-    },
-    {
-      "id": "getTopPnl",
-      "description": "Get highest PNL wallets from the f(x) Protocol leaderboard. Use to identify top-performing traders.",
-      "method": "GET",
-      "path": "/api/top-pnl",
-      "auth": "none",
-      "parameters": [
-        {
-          "name": "limit",
-          "type": "integer",
-          "required": false,
-          "description": "Max wallets to return (1-100, default 10)"
         }
       ]
     },

@@ -284,7 +284,7 @@ const routes: RoutesConfig = {
     price: "$0.01",
     network: rawNetwork,
     config: {
-      description: "Access AliDashboard premium leaderboard API",
+      description: "Access Smartflow premium leaderboard API",
       mimeType: "application/json",
       discoverable: false,
       resource: premiumApiResource,

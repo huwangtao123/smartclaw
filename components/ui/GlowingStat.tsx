@@ -13,8 +13,8 @@ export function GlowingStat({
 }: GlowingStatProps) {
   return (
     <div className={`flex flex-col ${className}`}>
-      <span className="label-subtle mb-1">{label}</span>
-      <span className="text-2xl font-mono text-white drop-shadow-[0_0_15px_rgba(74,222,128,0.25)]">
+      <span className="label-subtle mb-1.5">{label}</span>
+      <span className="text-2xl font-mono text-white drop-shadow-[0_0_10px_rgba(0,255,157,0.15)]">
         {value}
       </span>
     </div>

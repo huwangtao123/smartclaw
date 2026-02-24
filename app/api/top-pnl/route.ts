@@ -18,6 +18,12 @@ function parseLimit(url: URL) {
   return Math.min(Math.floor(value), MAX_LIMIT);
 }
 
+/**
+ * Global aggregate top-PNL endpoint.
+ * Merges results from all integrated protocols.
+ * Currently only f(x) Protocol is live, so this returns the same data.
+ * As more protocols are added, this will merge and re-rank across sources.
+ */
 export async function GET(request: Request) {
   try {
     await updateDashboardData();
@@ -36,11 +42,13 @@ export async function GET(request: Request) {
         pnlClean: trader.pnlClean ?? null,
         vol: trader.vol ?? null,
         net: trader.net ?? null,
+        protocol: "fx",
       }));
 
     return NextResponse.json({
       data,
       meta: {
+        protocols: ["fx"],
         limit,
         total: traders.length,
         generatedAt: new Date().toISOString(),

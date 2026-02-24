@@ -1,142 +1,231 @@
 ---
-name: fx-protocol-api
-description: Query f(x) Protocol trading data — fxUSD borrow rates, top PNL wallets, and cross-protocol lending rate comparisons.
+name: smartflow-api
+description: Cross-protocol smart wallet tracking — top PNL wallets (global & per-protocol), fxUSD borrow rates, lending rate comparisons, and premium analytics. Pay-per-call premium via x402.
 ---
 
-# f(x) Protocol API
+# Smartflow API
 
-Query real-time f(x) Protocol trading intelligence from any AI agent.
+Cross-protocol smart wallet tracking. Aggregate PNL, ROI, and capital flow signals across protocol leaderboards.
 
-## Base URL
+**Base URL**: `https://alidashboard.up.railway.app`
 
-https://alidashboard.up.railway.app
+## Endpoints
 
-## Operations
+### 1. Global Top PNL Wallets
 
-### Get fxUSD Borrow Rate
+**`GET /api/top-pnl?limit={n}`** — No auth
 
-```bash
-curl "https://alidashboard.up.railway.app/api/fxusd-rate?limit=7"
+Returns top PNL wallets aggregated across all integrated protocols. Each entry includes `protocol` field.
+
+| Param   | Type | Default | Description               |
+| ------- | ---- | ------- | ------------------------- |
+| `limit` | int  | 10      | Wallets to return (1–100) |
+
+```json
+{
+  "data": [
+    {
+      "rank": 115,
+      "trader": "0xafd85073...",
+      "roi": 80.61,
+      "pnl": 11494279.94,
+      "pnlClean": 11494279.94,
+      "vol": 147394178.19,
+      "net": null,
+      "protocol": "fx"
+    }
+  ],
+  "meta": {
+    "protocols": ["fx"],
+    "limit": 2,
+    "total": 1727,
+    "generatedAt": "2026-02-24T00:49:33.089Z"
+  }
+}
 ```
 
-Returns the latest fxUSD borrow APR and a historical series. Use this before opening a leveraged position.
+---
 
-Parameters:
-- `maWindow` (int) — moving average window in days, default 30
-- `limit` (int) — number of historical points to return
+### 2. f(x) Protocol Top PNL Wallets
 
-### Get Top PNL Wallets
+**`GET /api/fx/top-pnl?limit={n}`** — No auth
 
-```bash
-curl "https://alidashboard.up.railway.app/api/top-pnl?limit=10"
+Returns top PNL wallets from the f(x) Protocol leaderboard only.
+
+| Param   | Type | Default | Description               |
+| ------- | ---- | ------- | ------------------------- |
+| `limit` | int  | 10      | Wallets to return (1–100) |
+
+```json
+{
+  "data": [
+    {
+      "rank": 115,
+      "trader": "0xafd85073...",
+      "roi": 80.61,
+      "pnl": 11494279.94,
+      "pnlClean": 11494279.94,
+      "vol": 147394178.19,
+      "net": null
+    }
+  ],
+  "meta": {
+    "protocol": "fx",
+    "limit": 2,
+    "total": 1727,
+    "generatedAt": "2026-02-24T00:49:33.343Z"
+  }
+}
 ```
 
-Returns the highest-performing wallets from the f(x) Protocol leaderboard.
+---
 
-Parameters:
-- `limit` (int, 1–100) — number of wallets to return, default 10
+### 3. f(x) Protocol Status
 
-### Compare Lending Rates
+**`GET /api/fx/status`** — No auth
 
-```bash
-curl "https://alidashboard.up.railway.app/api/rates"
+Returns protocol overview: tracked wallets, winners, win rates, volume, PNL, and momentum.
+
+```json
+{
+  "protocol": "fx",
+  "trackedWallets": 1727,
+  "winners": 440,
+  "losers": 1287,
+  "winRate": 25.48,
+  "weightedWinRate": 35.5,
+  "totalVolume": 1200000000,
+  "totalPnl": 5000000,
+  "avgRoi": 12.5,
+  "netMomentumShare": 4.2,
+  "hasMajorityMomentum": false,
+  "generatedAt": "2026-02-24T00:49:33.089Z"
+}
 ```
 
-Returns borrow rate data across Aave, CrvUSD, and fxUSD for side-by-side comparison.
+---
 
-Parameters:
-- `maWindow` (int) — moving average window in days
+### 4. fxUSD Borrow Rate
 
-### Get Premium Metrics (paid)
+**`GET /api/fx/fxusd-rate?limit={n}&maWindow={w}`** — No auth
 
-```bash
-curl "https://alidashboard.up.railway.app/api/premium" -b "aicharts-premium-access=COOKIE_VALUE"
+Returns latest and historical fxUSD borrow APR from f(x) Protocol.
+
+| Param      | Type | Default | Description                      |
+| ---------- | ---- | ------- | -------------------------------- |
+| `limit`    | int  | all     | Historical data points to return |
+| `maWindow` | int  | 30      | Moving average window in days    |
+
+```json
+{
+  "latest": { "date": "2026-02-23", "rate": 4.95 },
+  "series": [
+    { "date": "2026-02-23", "rate": 4.95 },
+    { "date": "2026-02-22", "rate": 5.12 }
+  ],
+  "meta": {
+    "protocol": "fx",
+    "maWindow": 30,
+    "lastUpdated": "2026-02-23T00:00:00.000Z",
+    "source": "fallback"
+  }
+}
 ```
 
-Returns top traders by PNL and ROI. Requires x402 payment ($0.01 USDC on Base).
+---
 
-## Paying for Premium Endpoints
+### 5. Cross-Protocol Lending Rates
 
-Premium endpoints return `402 Payment Required` with x402 payment instructions. The agent needs a wallet with USDC on Base to pay automatically.
+**`GET /api/rates?maWindow={w}`** — No auth
 
-### Using x402-fetch (recommended)
+Returns borrow rates across Aave, CrvUSD, and fxUSD for comparison.
 
-Install: `npm install x402-fetch`
+| Param      | Type | Default | Description                   |
+| ---------- | ---- | ------- | ----------------------------- |
+| `maWindow` | int  | 30      | Moving average window in days |
+
+```json
+{
+  "series": [
+    {
+      "date": "2025-01-01",
+      "aaveBorrow": 11.90,
+      "crvusdAvg": 12.57,
+      "fxusdBorrow": 5.20
+    }
+  ],
+  "maWindow": 30,
+  "lastUpdated": "2026-02-23T00:00:00.000Z",
+  "source": "fallback",
+  "assetPrices": { "WBTC": 64744.78, "wstETH": 2287.88 }
+}
+```
+
+---
+
+### 6. Premium Leaderboard Metrics
+
+**`GET /api/premium`** — Requires x402 payment ($0.01 USDC on Base)
+
+Returns full top-10 traders by PNL and ROI.
+
+```json
+{
+  "x402Version": 1,
+  "protocol": "fx",
+  "topByPnl": [ { "rank": 1, "trader": "0x...", "pnl": 11494279.94, "..." } ],
+  "topByRoi": [ { "rank": 1, "trader": "0x...", "roi": 724.0, "..." } ],
+  "generatedAt": "2026-02-24T00:49:33.089Z"
+}
+```
+
+## x402 Payment (Premium Access)
+
+Premium endpoints return `402 Payment Required`. The agent needs a Base wallet with USDC.
+
+### x402-fetch (recommended)
 
 ```javascript
-import { wrapFetch } from "x402-fetch";
+import { wrapFetch } from "x402-fetch"; // npm install x402-fetch
 
 const payingFetch = wrapFetch(fetch, {
-  privateKey: "0x...",  // Agent's EVM wallet private key (must hold USDC on Base)
+  privateKey: "0x...", // EVM private key with USDC on Base
 });
 
-// Automatically handles: 402 → sign USDC payment → retry request
-const response = await payingFetch("https://alidashboard.up.railway.app/api/premium");
-const data = await response.json();
-// { x402Version: 1, topByPnl: [...], topByRoi: [...], generatedAt: "..." }
+const res = await payingFetch("https://alidashboard.up.railway.app/api/premium");
+const data = await res.json();
 ```
 
-### Using x402-axios (alternative)
-
-Install: `npm install x402-axios axios`
-
-```javascript
-import axios from "axios";
-import { withPayment } from "x402-axios";
-
-const client = withPayment(axios.create(), {
-  privateKey: "0x...",
-});
-
-const response = await client.get("https://alidashboard.up.railway.app/api/premium");
-console.log(response.data);
-```
-
-### Using x402-python
-
-Install: `pip install x402`
+### x402-python
 
 ```python
-from x402 import x402_requests
+from x402 import x402_requests  # pip install x402
 
 response = x402_requests.get(
     "https://alidashboard.up.railway.app/api/premium",
     private_key="0x..."
 )
-print(response.json())
+data = response.json()
 ```
-
-### Using curl (manual flow)
-
-1. Call the endpoint — get a 402 with payment instructions:
-   ```bash
-   curl -i "https://alidashboard.up.railway.app/api/premium"
-   # Returns 402 with accepts[] containing price, network, payTo address
-   ```
-
-2. Sign a USDC payment off-chain using the instructions in the 402 response.
-
-3. Retry with the signed payment header:
-   ```bash
-   curl "https://alidashboard.up.railway.app/api/premium" -H "X-PAYMENT: <base64-encoded-signed-payment>"
-   ```
-
-4. On success, the premium data is returned.
 
 ### Cost
 
-- **$0.01 USDC** per call (on Base network)
+**$0.01 USDC** per call on Base network.
 
-## Full OpenAPI Spec
+## URL Pattern
 
-For complete schemas and response formats:
-
-```bash
-curl "https://alidashboard.up.railway.app/api/openapi"
+```
+/api/top-pnl              → Global aggregate across all protocols
+/api/fx/top-pnl            → f(x) Protocol specific
+/api/fx/fxusd-rate         → f(x) Protocol specific
+/api/rates                 → Cross-protocol comparison
+/api/premium               → Premium (x402-gated)
+/api/perp/...              → Perp DEX (coming soon)
+/api/meme/...              → Meme Coins (coming soon)
 ```
 
-## Discovery Files
+## Machine-Readable Specs
 
-- `/llms.txt` — plain-text API overview
-- `/.well-known/ai-plugin.json` — ChatGPT plugin manifest
-- `/agents.json` — agent capability descriptor
+- **OpenAPI 3.1**: `GET /api/openapi`
+- **LLM summary**: `GET /llms.txt`
+- **Agent descriptor**: `GET /agents.json`

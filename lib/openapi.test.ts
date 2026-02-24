@@ -14,7 +14,7 @@ describe("OpenAPI spec", () => {
 
     it("has correct version", () => {
         const info = doc.info as Record<string, string>;
-        assert.strictEqual(info.version, "1.2.0");
+        assert.strictEqual(info.version, "2.0.0");
     });
 
     it("has externalDocs pointing to llms.txt", () => {
@@ -25,10 +25,12 @@ describe("OpenAPI spec", () => {
     it("includes all expected paths", () => {
         const paths = doc.paths as Record<string, unknown>;
         const expected = [
-            "/api/fxusd-rate",
             "/api/top-pnl",
-            "/api/rates",
+            "/api/fx/top-pnl",
+            "/api/fx/fxusd-rate",
+            "/api/fx/status",
             "/api/premium",
+            "/api/rates",
             "/api/x402/session-token",
             "/api/openapi",
         ];
@@ -61,8 +63,10 @@ describe("OpenAPI spec", () => {
             Object.values(methods).map((op) => op.operationId),
         );
         const expected = [
-            "getFxusdRate",
             "getTopPnl",
+            "getFxTopPnl",
+            "getFxStatus",
+            "getFxFxusdRate",
             "getRates",
             "getPremiumMetrics",
             "createX402SessionToken",
@@ -98,12 +102,14 @@ describe("OpenAPI spec", () => {
         assert.strictEqual(sessionToken.post["x-openai-isConsequential"], true);
     });
 
-    it("has Public, Premium, and Internal tags", () => {
+    it("has expected tags", () => {
         const tags = doc.tags as Array<Record<string, string>>;
         const names = tags.map((t) => t.name);
-        assert.ok(names.includes("Public"));
+        assert.ok(names.includes("Global"));
+        assert.ok(names.includes("f(x) Protocol"));
+        assert.ok(names.includes("Rates"));
         assert.ok(names.includes("Premium"));
-        assert.ok(names.includes("Internal"));
+        assert.ok(names.includes("Discovery"));
     });
 
     it("defines required component schemas", () => {

@@ -13,6 +13,7 @@ export async function GET() {
 
   return NextResponse.json({
     x402Version: 1,
+    protocol: "fx",
     topByPnl: metrics.topByPnl,
     topByRoi: metrics.topByRoi,
     generatedAt: new Date().toISOString(),

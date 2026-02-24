@@ -7,6 +7,7 @@ import { computeMetrics } from "@/lib/metrics";
 import { updateDashboardData } from "@/lib/updateData";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowingStat } from "@/components/ui/GlowingStat";
+import { NavbarWithState } from "@/components/ui/Navbar";
 import { NeonProgress } from "@/components/ui/NeonProgress";
 
 export const dynamic = "force-dynamic";
@@ -92,12 +93,13 @@ export default async function PremiumPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-void-900 text-slate-100 relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[800px] bg-neon-500/10 blur-[150px] rounded-full -z-10 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-neon-500/5 blur-[120px] rounded-full -z-10 pointer-events-none" />
+    <div className="min-h-screen bg-black text-white/80 relative overflow-hidden">
+      {/* Background Glow */}
+      <div className="fixed top-[-200px] left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-neon-500/[0.04] blur-[150px] rounded-full pointer-events-none" />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 py-14 relative z-10">
+      <NavbarWithState />
+
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 pt-14 pb-20 relative z-10">
         <GlassCard className="overflow-hidden !border-none bg-gradient-to-br from-void-800 to-neon-500/10 p-8 sm:p-12 animate-enter delay-100">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-3xl">

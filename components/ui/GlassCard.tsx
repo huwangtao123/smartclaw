@@ -9,10 +9,10 @@ export function GlassCard({ children, className = "" }: GlassCardProps) {
   return (
     <div
       className={`
-        bg-void-900/60 backdrop-blur-xl border border-glass-stroke
-        shadow-2xl relative overflow-hidden transition-all duration-300 ease-out
-        hover:border-neon-500/30 hover:-translate-y-1
-        before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent
+        bg-[#111]/80 border border-white/[0.06]
+        rounded-2xl relative overflow-hidden transition-colors duration-200 ease-out
+        hover:border-white/[0.12]
+        before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/[0.06] before:to-transparent
         ${className}
       `}
     >

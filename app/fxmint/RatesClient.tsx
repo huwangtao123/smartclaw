@@ -10,6 +10,7 @@ import {
 import type { RateSeries } from "@/lib/rates";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlowingStat } from "@/components/ui/GlowingStat";
+import { Navbar } from "@/components/ui/Navbar";
 import { NeonProgress } from "@/components/ui/NeonProgress";
 
 type Language = "en" | "zh";
@@ -69,36 +70,7 @@ function clampNumber(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-function LanguageToggle({
-  language,
-  onChange,
-}: {
-  language: Language;
-  onChange: (language: Language) => void;
-}) {
-  return (
-    <div className="inline-flex rounded-full border border-slate-700 bg-slate-900/70 p-1 text-xs font-medium text-slate-300">
-      {["en", "zh"].map((code) => {
-        const isActive = language === code;
-        const label = code === "en" ? "EN" : "中文";
-        return (
-          <button
-            key={code}
-            type="button"
-            onClick={() => onChange(code as Language)}
-            className={`rounded-full px-3 py-1 transition ${
-              isActive
-                ? "bg-emerald-400 text-slate-900"
-                : "hover:bg-slate-800/80 hover:text-slate-100"
-            }`}
-          >
-            {label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+// LanguageToggle replaced by shared Navbar
 
 function RatesPageError({ language }: { language: Language }) {
   const isZh = language === "zh";
@@ -323,23 +295,26 @@ export function RatesClient({ data }: { data: RateSeries }) {
   }, [isZh, rangeId]);
 
   return (
-    <div className="min-h-screen bg-void-900 text-slate-100 relative overflow-hidden">
-      {/* Background Decor */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[800px] bg-neon-500/10 blur-[150px] rounded-full -z-10 pointer-events-none" />
+    <div className="min-h-screen bg-black text-white/80 relative overflow-hidden">
+      {/* Background Glow */}
+      <div className="fixed top-[-200px] left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-neon-500/[0.04] blur-[150px] rounded-full pointer-events-none" />
 
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12 relative z-10">
-        <div className="flex items-center justify-between animate-enter delay-100">
-          <LanguageToggle language={language} onChange={setLanguage} />
-          <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest text-slate-500">
-            <span className="rounded-full border border-neon-500/20 bg-neon-500/5 px-3 py-1 text-neon-300">
-              {isZh ? "离线数据已加载" : "Offline data loaded"}
-            </span>
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-              {isZh
-                ? "实时 API + 离线 CSV 兜底"
-                : "Live API + offline CSV fallback"}
-            </span>
-          </div>
+      <Navbar
+        language={language}
+        onLanguageChange={setLanguage}
+        isZh={isZh}
+      />
+
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 pt-14 pb-20 relative z-10">
+        <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest text-white/30 animate-enter delay-100">
+          <span className="rounded-full border border-neon-500/20 bg-neon-500/[0.04] px-3 py-1 text-neon-400/70">
+            {isZh ? "离线数据已加载" : "Offline data loaded"}
+          </span>
+          <span className="rounded-full border border-white/[0.06] bg-white/[0.02] px-3 py-1">
+            {isZh
+              ? "实时 API + 离线 CSV 兜底"
+              : "Live API + offline CSV fallback"}
+          </span>
         </div>
 
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6 animate-enter delay-200">
@@ -353,7 +328,7 @@ export function RatesClient({ data }: { data: RateSeries }) {
             />
           </div>
           <div>
-            <div className="label-subtle !text-neon-300">
+            <div className="label-subtle !text-neon-400/70">
               {isZh ? "借贷利率对比" : "Lending Rate Comparison"}
             </div>
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-white sm:text-5xl">
@@ -361,12 +336,12 @@ export function RatesClient({ data }: { data: RateSeries }) {
                 ? "fxUSD vs Aave USDC vs crvUSD"
                 : "fxUSD vs Aave USDC vs crvUSD"}
             </h1>
-            <p className="mt-3 max-w-3xl text-sm text-slate-400 sm:text-base leading-relaxed">
+            <p className="mt-3 max-w-3xl text-sm text-white/40 sm:text-base leading-relaxed">
               {isZh
                 ? "对比 fxUSD、Aave USDC、crvUSD(WBTC) 借款利率，支持原始曲线与移动均线，便于观察趋势与偏离。"
                 : "Compare fxUSD, Aave USDC, and crvUSD(WBTC) borrow APR with raw curves and moving averages to spot trends and deviations."}
             </p>
-            <p className="mt-2 text-[10px] uppercase tracking-widest text-slate-500">
+            <p className="mt-2 text-[10px] uppercase tracking-widest text-white/25">
               {isZh
                 ? "默认使用离线 CSV 数据，如在线源可用则自动刷新。"
                 : "Uses offline CSV snapshots by default, refreshing from live sources when available."}
@@ -440,11 +415,10 @@ export function RatesClient({ data }: { data: RateSeries }) {
                     key={preset.label}
                     type="button"
                     onClick={() => setDays(preset.value)}
-                    className={`rounded-full border px-3 py-1 ${
-                      days === preset.value
+                    className={`rounded-full border px-3 py-1 ${days === preset.value
                         ? "border-emerald-300 bg-emerald-400/20 text-emerald-50"
                         : "border-emerald-300/30 text-emerald-100/70 hover:border-emerald-200/60 hover:text-emerald-50"
-                    }`}
+                      }`}
                   >
                     {preset.label}
                   </button>
@@ -522,11 +496,10 @@ export function RatesClient({ data }: { data: RateSeries }) {
                           key={asset}
                           type="button"
                           onClick={() => setCollateral(asset)}
-                          className={`w-full rounded-lg border px-3 py-3 text-left transition ${
-                            isActive
+                          className={`w-full rounded-lg border px-3 py-3 text-left transition ${isActive
                               ? "border-emerald-400/70 bg-slate-950/70"
                               : "border-slate-800 bg-slate-950/40 hover:border-emerald-300/40"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-slate-400">
                             <span>{asset}</span>
@@ -778,11 +751,10 @@ export function RatesClient({ data }: { data: RateSeries }) {
                             {row.parts.map((part) => (
                               <span
                                 key={`${row.date}-${part.label}`}
-                                className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
-                                  part.highlight
+                                className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${part.highlight
                                     ? "bg-neon-500/10 text-neon-300 border border-neon-500/20"
                                     : "bg-white/5 text-slate-500 border border-white/5"
-                                }`}
+                                  }`}
                               >
                                 {part.label}: {part.value}
                               </span>

@@ -3,13 +3,17 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 
-  /* Void Palette */
-  --color-void-900: #0a0a0b;
-  --color-void-800: #121214;
-  --color-void-700: #1c1c1f;
+  /* Void Palette — pure black base like nkmc.ai */
+  --color-void-900: #000000;
+  --color-void-800: #0a0a0a;
+  --color-void-700: #111111;
+
+  /* Card Surface */
+  --color-card: #111111;
+  --color-card-hover: #161616;
 
   /* Neon Palette */
   --color-neon-300: #86efac;
@@ -20,15 +24,18 @@
   /* Glass Utils */
   --color-glass-stroke: rgba(255, 255, 255, 0.08);
 
+  /* Atmospheric blue glow — nkmc.ai edge effect */
+  --color-glow-blue: rgba(59, 130, 246, 0.15);
+
   /* Animations */
-  --animate-enter: slideUpFade 0.5s ease-out forwards;
+  --animate-enter: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-terminal-blink: blink 1s step-end infinite;
 }
 
-/* Custom Keyframes need to be outside @theme in v4 if using standard CSS or inside if mapping to --animate-* */
 @keyframes slideUpFade {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(24px);
   }
   to {
     opacity: 1;
@@ -36,48 +43,83 @@
   }
 }
 
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 :root {
-  /* Default to void theme */
-  --background: var(--color-void-900);
-  --foreground: #ededed;
+  --background: #000000;
+  --foreground: #e4e4e7;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans);
-  /* Global Noise Texture */
+  font-family: var(--font-sans), "IBM Plex Sans", system-ui, sans-serif;
   position: relative;
   min-height: 100vh;
 }
 
-/* Noise overlay */
+/* Subtle grain texture */
 body::before {
   content: "";
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 50;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-  opacity: 0.4;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.3;
 }
 
-/* Staggered Delays */
-.delay-100 {
-  animation-delay: 100ms;
+/* Blue atmospheric edge glows — nkmc.ai edge effect */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 60% 50% at 0% 50%, var(--color-glow-blue), transparent),
+    radial-gradient(ellipse 60% 50% at 100% 50%, var(--color-glow-blue), transparent);
 }
-.delay-200 {
-  animation-delay: 200ms;
-}
-.delay-300 {
-  animation-delay: 300ms;
-}
+
+/* Staggered Animation Delays */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-600 { animation-delay: 600ms; }
+.delay-700 { animation-delay: 700ms; }
 
 /* Typography Utilities */
 .label-subtle {
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.25em;
-  font-weight: 700;
-  color: var(--color-zinc-500);
+  letter-spacing: 0.2em;
+  font-weight: 600;
+  color: rgba(161, 161, 170, 0.6);
+}
+
+/* Section divider — thin horizontal rule */
+.section-divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06) 20%, rgba(255, 255, 255, 0.06) 80%, transparent);
+}
+
+/* Terminal cursor blink */
+.terminal-cursor::after {
+  content: "▋";
+  animation: blink 1s step-end infinite;
+  color: var(--color-neon-500);
+  margin-left: 2px;
+}
+
+/* Terminal prompt */
+.terminal-prompt {
+  color: var(--color-neon-500);
+  font-family: var(--font-mono), "JetBrains Mono", monospace;
 }

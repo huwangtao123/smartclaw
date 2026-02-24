@@ -1,9 +1,9 @@
 {
   "schema_version": "v1",
-  "name_for_human": "f(x) Protocol Leaderboard",
-  "name_for_model": "fx_protocol_leaderboard",
-  "description_for_human": "Near real-time intelligence on f(x) Protocol trading performance, including fxUSD borrow rates, top PNL wallets, and premium leaderboard analytics.",
-  "description_for_model": "Provides f(x) Protocol DeFi trading data. Use getFxusdRate to check current fxUSD borrow APR before leveraged positions. Use getTopPnl to find the highest-performing wallets for copy-trading analysis. Use getRates for cross-protocol lending rate comparisons (Aave, CrvUSD, fxUSD). Premium endpoints require x402 USDC payment.",
+  "name_for_human": "Smartflow",
+  "name_for_model": "smartflow",
+  "description_for_human": "Cross-protocol smart wallet tracking. Aggregate PNL, ROI, and capital flow signals from f(x) Protocol, Perp DEXes, and more.",
+  "description_for_model": "Cross-protocol smart wallet tracking API. Use getTopPnl for global top wallets across all protocols. Use getFxTopPnl for f(x) Protocol-specific top wallets. Use getFxFxusdRate to check fxUSD borrow APR. Use getRates for cross-protocol lending rate comparisons (Aave, CrvUSD, fxUSD). Premium endpoints require x402 USDC payment.",
   "auth": {
     "type": "none"
   },
