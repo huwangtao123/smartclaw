@@ -32,11 +32,6 @@ const traderSchema = {
   description:
     "Smart wallet entry from a protocol leaderboard. Currently sourced from f(x) Protocol.",
   properties: {
-    rank: {
-      type: "integer",
-      description: "Leaderboard rank (1-indexed).",
-      example: 1,
-    },
     trader: {
       type: "string",
       description: "Wallet address for the trader.",
@@ -68,7 +63,7 @@ const traderSchema = {
       example: 10234.12,
     },
   },
-  required: ["rank", "trader", "roi", "pnl", "pnlClean", "vol", "net"],
+  required: ["trader", "roi", "pnl", "pnlClean", "vol", "net"],
   additionalProperties: false,
 };
 

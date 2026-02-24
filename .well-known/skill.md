@@ -25,7 +25,6 @@ Returns top PNL wallets aggregated across all integrated protocols. Each entry i
 {
   "data": [
     {
-      "rank": 115,
       "trader": "0xafd85073...",
       "roi": 80.61,
       "pnl": 11494279.94,
@@ -60,7 +59,6 @@ Returns top PNL wallets from the f(x) Protocol leaderboard only.
 {
   "data": [
     {
-      "rank": 115,
       "trader": "0xafd85073...",
       "roi": 80.61,
       "pnl": 11494279.94,
@@ -229,3 +227,77 @@ data = response.json()
 - **OpenAPI 3.1**: `GET /api/openapi`
 - **LLM summary**: `GET /llms.txt`
 - **Agent descriptor**: `GET /agents.json`
+
+---
+
+## Agent Usage Guide
+
+### Example Prompts → API Calls
+
+| User asks                          | Call                                                    | Then                                |
+| ---------------------------------- | ------------------------------------------------------- | ----------------------------------- |
+| "How's f(x) Protocol doing?"       | `GET /api/fx/status`                                    | Summarize wallets, win rate, volume |
+| "Who are the top traders?"         | `GET /api/fx/top-pnl?limit=5`                           | Show as a ranked table              |
+| "What's the fxUSD borrow rate?"    | `GET /api/fx/fxusd-rate?limit=7`                        | Show latest + 7-day trend           |
+| "Compare lending rates"            | `GET /api/rates`                                        | Compare fxUSD vs Aave vs CrvUSD     |
+| "Top wallets across all protocols" | `GET /api/top-pnl?limit=10`                             | Global view with protocol labels    |
+| "Give me the full picture"         | `GET /api/fx/status` then `GET /api/fx/top-pnl?limit=3` | Status + top wallets combo          |
+
+### Recommended Workflows
+
+**Quick Overview** (best starting point):
+1. `GET /api/fx/status` → Get protocol health snapshot
+2. If `weightedWinRate` > 40%, say "Winning wallets dominate trading activity"
+3. If `hasMajorityMomentum` is true, say "Capital momentum favors winners"
+
+**Deep Dive**:
+1. `GET /api/fx/status` → Overall health
+2. `GET /api/fx/top-pnl?limit=5` → Top performers
+3. `GET /api/fx/fxusd-rate?limit=30` → Rate trend for context
+
+**Rate Comparison**:
+1. `GET /api/rates` → All protocols
+2. Compare `fxusdBorrow` vs `aaveBorrow` vs `crvusdAvg`
+3. Recommend the lowest rate for borrowing
+
+### Data Interpretation
+
+| Field                 | Meaning                             | Good/Bad Signal                                 |
+| --------------------- | ----------------------------------- | ----------------------------------------------- |
+| `weightedWinRate`     | % of volume from profitable wallets | > 40% = strong, < 25% = weak                    |
+| `winRate`             | % of wallets that are profitable    | Context only — don't compare to weightedWinRate |
+| `totalPnl`            | Sum of all PNL (can be negative)    | Positive = net profitable market                |
+| `netMomentumShare`    | Winners' net capital as % of total  | > 50% = winner-dominated flow                   |
+| `hasMajorityMomentum` | `weightedWinRate >= 50%`            | true = bullish signal                           |
+| `pnl` vs `pnlClean`   | pnlClean excludes outliers          | Use `pnl` for display, `pnlClean` for ranking   |
+| `roi`                 | Return on investment (%)            | > 100% = doubled their money                    |
+| `vol`                 | Total traded volume for this wallet | Higher = more active trader                     |
+
+### Formatting Rules
+
+When presenting data to users, apply these formatting rules:
+
+- **PNL/Volume**: Use compact notation — `$11.5M` not `$11494279.94`
+- **ROI**: Show as percentage — `80.6%` not `80.61379`
+- **Win Rate**: Show as percentage with 1 decimal — `35.5%`
+- **Wallet addresses**: Truncate — `0xafd8...D27e` (first 6 + last 4)
+- **Dates**: Use relative time when possible — "2 hours ago" not ISO timestamps
+- **Tables**: Always present top wallets as a table, not a list
+
+Example output for top wallets:
+
+```
+| #   | Wallet        | PNL    | ROI    | Volume  |
+| --- | ------------- | ------ | ------ | ------- |
+| 1   | 0xafd8...D27e | $11.5M | 80.6%  | $147.4M |
+| 2   | 0x277C...F6F3 | $3.8M  | 348.3% | $79.0M  |
+```
+
+### Domain Context
+
+- **f(x) Protocol** is a DeFi protocol for leveraged positions on Ethereum. Traders deposit collateral and borrow fxUSD (a stablecoin).
+- **PNL** = Profit and Loss from trading positions.
+- **fxUSD borrow rate** = The annual interest rate for borrowing fxUSD. Lower is better for traders.
+- **Aave & CrvUSD** are competing DeFi lending protocols. The `/api/rates` endpoint lets you compare costs.
+- A trader with high PNL + high volume = **consistently profitable**. High PNL + low volume = **got lucky on one big trade**.
+

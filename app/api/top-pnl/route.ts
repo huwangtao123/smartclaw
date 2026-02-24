@@ -35,7 +35,6 @@ export async function GET(request: Request) {
       .sort((a, b) => getPnl(b) - getPnl(a))
       .slice(0, limit)
       .map((trader) => ({
-        rank: trader.rank,
         trader: trader.trader,
         roi: trader.roi ?? null,
         pnl: trader.pnl ?? null,
