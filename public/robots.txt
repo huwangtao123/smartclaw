@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://smartclaw.xyz/sitemap.xml
