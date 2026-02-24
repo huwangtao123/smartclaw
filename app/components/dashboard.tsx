@@ -720,8 +720,18 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
         {/* ═══════ FOOTER ═══════ */}
         <hr className="section-divider my-14" />
 
-        <footer className="text-center text-xs text-white/15 font-mono">
-          smartclaw · {isZh ? "跨协议聪明钱包追踪" : "Cross-Protocol Smart Wallet Tracker"} · Powered by x402
+        <footer className="text-center text-xs text-white/15 font-mono space-y-1">
+          <p>smartclaw · {isZh ? "跨协议聪明钱包追踪" : "Cross-Protocol Smart Wallet Tracker"} · Powered by x402</p>
+          <p>
+            <time dateTime={new Date().toISOString()}>
+              {isZh ? "数据更新于 " : "Data updated "}
+              {new Date().toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </time>
+          </p>
         </footer>
       </div >
     </div >

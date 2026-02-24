@@ -55,6 +55,7 @@ const jsonLd = {
       url: BASE_URL,
       description:
         "Cross-protocol smart wallet tracking platform for DeFi traders and AI agents.",
+      foundingDate: "2026-01-01",
       sameAs: [],
     },
     {
@@ -63,22 +64,63 @@ const jsonLd = {
       url: `${BASE_URL}/api/openapi`,
       documentation: `${BASE_URL}/SKILL.md`,
       description:
-        "REST API providing smart wallet PNL, ROI, and lending rate data across DeFi protocols.",
+        "REST API providing smart wallet PNL, ROI, and lending rate data across DeFi protocols. Tracks 1,700+ wallets on f(x) Protocol with real-time on-chain data.",
       provider: {
         "@type": "Organization",
         name: "Smartclaw",
       },
       termsOfService: `${BASE_URL}/llms.txt`,
+      datePublished: "2026-01-15",
+      dateModified: new Date().toISOString().split("T")[0],
     },
     {
       "@type": "WebSite",
       name: "Smartclaw",
       url: BASE_URL,
+      datePublished: "2026-01-15",
+      dateModified: new Date().toISOString().split("T")[0],
       potentialAction: {
         "@type": "SearchAction",
         target: `${BASE_URL}/api/fx/top-pnl?limit={limit}`,
         "query-input": "required name=limit",
       },
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What is Smartclaw?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Smartclaw is a cross-protocol smart wallet tracking API. It aggregates PNL, ROI, and capital flow signals from DeFi protocol leaderboards, currently tracking 1,700+ wallets on f(x) Protocol.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How do AI agents use Smartclaw?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Copy the SKILL.md file to your AI agent's context. It includes endpoint details, response examples, formatting rules, and recommended workflows. Agents can then call REST API endpoints to get smart wallet data.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How much does Smartclaw cost?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Most endpoints are free and require no authentication. Premium endpoints cost $0.01 USDC per call on Base network using the x402 payment protocol.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What data does Smartclaw track?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Smartclaw tracks wallet PNL (profit and loss), ROI (return on investment), trading volume, win rates, and capital flow momentum across DeFi protocol leaderboards. It also compares lending rates across Aave, CrvUSD, and fxUSD.",
+          },
+        },
+      ],
     },
   ],
 };

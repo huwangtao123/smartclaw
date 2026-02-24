@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { NavbarWithState } from "@/components/ui/Navbar";
 import { GlassCard } from "@/components/ui/GlassCard";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
     title: "Docs — Smartclaw API",
     description:
@@ -72,7 +74,28 @@ const facts = [
     },
 ];
 
+const faqs = [
+    {
+        q: "What is Smartclaw?",
+        a: "Smartclaw is a cross-protocol smart wallet tracking API. It aggregates PNL, ROI, and capital flow signals from DeFi protocol leaderboards, currently tracking 1,700+ wallets on f(x) Protocol.",
+    },
+    {
+        q: "How do AI agents integrate with Smartclaw?",
+        a: "Copy the SKILL.md file into your agent's context. It includes endpoint URLs, response schemas, formatting rules, and recommended multi-step workflows. No API key required for public endpoints.",
+    },
+    {
+        q: "What does premium access include?",
+        a: "Premium endpoints return the top-10 traders ranked by PNL and ROI. Each call costs $0.01 USDC on Base network, paid automatically via the x402 payment protocol.",
+    },
+    {
+        q: "How fresh is the data?",
+        a: "Data is sourced from on-chain snapshots via the f(x) Protocol leaderboard API and The Graph. Dashboard data refreshes on every page load. Lending rates are updated daily.",
+    },
+];
+
 export default function DocsPage() {
+    const now = new Date();
+
     return (
         <div className="min-h-screen bg-surface text-white">
             <NavbarWithState />
@@ -80,8 +103,18 @@ export default function DocsPage() {
                 <h1 className="text-3xl font-bold tracking-tight mb-2">
                     Smartclaw API Docs
                 </h1>
-                <p className="text-sm text-white/40 mb-12">
+                <p className="text-sm text-white/40 mb-1">
                     Everything AI agents and developers need to integrate with Smartclaw.
+                </p>
+                <p className="text-xs text-white/20 mb-12">
+                    <time dateTime={now.toISOString()}>
+                        Last updated:{" "}
+                        {now.toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                        })}
+                    </time>
                 </p>
 
                 {/* ── Quick Facts ── */}
@@ -137,6 +170,81 @@ export default function DocsPage() {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                </section>
+
+                {/* ── Data Sources & Methodology ── */}
+                <section className="mb-14">
+                    <h2 className="text-lg font-semibold text-white mb-4">
+                        Data Sources & Methodology
+                    </h2>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <GlassCard className="p-5">
+                            <h3 className="text-sm font-semibold text-white mb-2">
+                                Smart Wallet Data
+                            </h3>
+                            <p className="text-xs text-white/40 leading-relaxed">
+                                Wallet PNL, ROI, and volume are sourced from the{" "}
+                                <strong className="text-white/60">f(x) Protocol leaderboard API</strong>.
+                                Data reflects cumulative on-chain positions. The leaderboard tracks all
+                                wallets that have interacted with f(x) Protocol vaults.
+                            </p>
+                        </GlassCard>
+                        <GlassCard className="p-5">
+                            <h3 className="text-sm font-semibold text-white mb-2">
+                                Lending Rates
+                            </h3>
+                            <p className="text-xs text-white/40 leading-relaxed">
+                                fxUSD, Aave, and CrvUSD borrow rates are collected daily from{" "}
+                                <strong className="text-white/60">The Graph</strong> and protocol
+                                subgraphs. Historical data goes back to January 2025. Rates are APR
+                                (annualized percentage rate).
+                            </p>
+                        </GlassCard>
+                        <GlassCard className="p-5">
+                            <h3 className="text-sm font-semibold text-white mb-2">
+                                Update Frequency
+                            </h3>
+                            <p className="text-xs text-white/40 leading-relaxed">
+                                Dashboard and top-pnl data refresh on{" "}
+                                <strong className="text-white/60">every page load</strong> (force-dynamic).
+                                Lending rates update{" "}
+                                <strong className="text-white/60">daily at midnight UTC</strong>.
+                                Premium metrics are computed in real-time per request.
+                            </p>
+                        </GlassCard>
+                        <GlassCard className="p-5">
+                            <h3 className="text-sm font-semibold text-white mb-2">
+                                Metrics Methodology
+                            </h3>
+                            <p className="text-xs text-white/40 leading-relaxed">
+                                <strong className="text-white/60">Win rate</strong> = % of wallets with
+                                positive PNL.{" "}
+                                <strong className="text-white/60">Weighted win rate</strong> = % of total
+                                volume from winning wallets.{" "}
+                                <strong className="text-white/60">Momentum</strong> = net capital flow share
+                                of winning wallets vs total.
+                            </p>
+                        </GlassCard>
+                    </div>
+                </section>
+
+                {/* ── FAQ ── */}
+                <section className="mb-14">
+                    <h2 className="text-lg font-semibold text-white mb-4">
+                        Frequently Asked Questions
+                    </h2>
+                    <div className="space-y-4">
+                        {faqs.map((faq) => (
+                            <GlassCard key={faq.q} className="p-5">
+                                <h3 className="text-sm font-semibold text-white mb-2">
+                                    {faq.q}
+                                </h3>
+                                <p className="text-xs text-white/40 leading-relaxed">
+                                    {faq.a}
+                                </p>
+                            </GlassCard>
+                        ))}
                     </div>
                 </section>
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { FxVolumeChart } from "@/app/components/FxVolumeChart";
 import { loadFilteredTraders } from "@/lib/data";
@@ -11,6 +12,15 @@ import { NavbarWithState } from "@/components/ui/Navbar";
 import { NeonProgress } from "@/components/ui/NeonProgress";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Premium Analytics — Smartclaw",
+  description:
+    "Top-10 traders by PNL and ROI on f(x) Protocol. Volume trends, win rates, and momentum indicators. $0.01 USDC per API call via x402.",
+  alternates: {
+    canonical: "/premium",
+  },
+};
 
 function formatCurrency(value: number) {
   if (!Number.isFinite(value)) return "—";
@@ -35,6 +45,24 @@ function shortenAddress(value: string) {
   if (!value) return "—";
   return `${value.slice(0, 6)}…${value.slice(-4)}`;
 }
+const premiumJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: "Smartclaw Premium Analytics",
+  description:
+    "Top-10 traders by PNL and ROI on f(x) Protocol. Volume trends, win rates, and momentum indicators.",
+  offers: {
+    "@type": "Offer",
+    price: "0.01",
+    priceCurrency: "USD",
+    description: "Per API call via x402 protocol on Base network",
+  },
+  provider: {
+    "@type": "Organization",
+    name: "Smartclaw",
+    url: "https://smartclaw.xyz",
+  },
+};
 
 export default async function PremiumPage() {
   await updateDashboardData();
@@ -94,10 +122,23 @@ export default async function PremiumPage() {
 
   return (
     <div className="min-h-screen bg-black text-white/80 relative overflow-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(premiumJsonLd) }}
+      />
       {/* Background Glow */}
       <div className="fixed top-[-200px] left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-neon-500/[0.04] blur-[150px] rounded-full pointer-events-none" />
 
       <NavbarWithState />
+
+      {/* Answer-first summary for crawlers and AI agents */}
+      <section className="sr-only" aria-label="Premium Analytics Summary">
+        <h1>Smartclaw Premium Analytics</h1>
+        <p>
+          Top-10 f(x) Protocol traders ranked by PNL and ROI. Access via GET /api/premium for $0.01 USDC per call using the x402 payment protocol on Base network.
+          Currently tracking {metrics.totalTraders.toLocaleString()} wallets with {formatCurrency(metrics.totalVol)} in total volume.
+        </p>
+      </section>
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-6 pt-14 pb-20 relative z-10">
         <GlassCard className="overflow-hidden !border-none bg-gradient-to-br from-void-800 to-neon-500/10 p-8 sm:p-12 animate-enter delay-100">
