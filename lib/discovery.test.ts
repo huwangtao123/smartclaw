@@ -33,6 +33,18 @@ describe("llms.txt", () => {
     it("mentions x402 payment", () => {
         assert.ok(content.toLowerCase().includes("x402"));
     });
+
+    it("has policy section", () => {
+        assert.ok(content.includes("## Policy"));
+    });
+
+    it("has allowed URLs section", () => {
+        assert.ok(content.includes("## Allowed URLs"));
+    });
+
+    it("references RSS feed", () => {
+        assert.ok(content.includes("/feed.xml"));
+    });
 });
 
 describe("ai-plugin.json", () => {

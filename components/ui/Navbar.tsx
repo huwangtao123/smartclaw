@@ -51,6 +51,12 @@ export function Navbar({
                         {isZh ? "利率" : "Rates"}
                     </Link>
                     <Link
+                        href="/docs"
+                        className="rounded-lg px-3.5 py-1.5 text-xs font-medium text-white/60 transition hover:text-white hover:bg-white/[0.04]"
+                    >
+                        {isZh ? "文档" : "Docs"}
+                    </Link>
+                    <Link
                         href="/premium"
                         className="rounded-lg px-3.5 py-1.5 text-xs font-medium text-neon-400/80 transition hover:text-neon-300 hover:bg-neon-500/[0.06]"
                     >

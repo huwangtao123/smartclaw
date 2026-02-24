@@ -14,6 +14,8 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["400", "500"],
 });
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://smartclaw.xyz";
+
 export const metadata: Metadata = {
   title: "Smartclaw — Cross-Protocol Smart Wallet Tracker",
   description:
@@ -21,6 +23,64 @@ export const metadata: Metadata = {
   icons: {
     icon: "/fx-protocol-icon.svg",
   },
+  metadataBase: new URL(BASE_URL),
+  openGraph: {
+    title: "Smartclaw — Cross-Protocol Smart Wallet Tracker",
+    description:
+      "API-powered smart wallet tracking across DeFi protocol leaderboards.",
+    url: BASE_URL,
+    siteName: "Smartclaw",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Smartclaw",
+    description:
+      "Cross-protocol smart wallet tracking API for AI agents.",
+  },
+  alternates: {
+    types: {
+      "application/rss+xml": "/feed.xml",
+      "text/plain": "/llms.txt",
+    },
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      name: "Smartclaw",
+      url: BASE_URL,
+      description:
+        "Cross-protocol smart wallet tracking platform for DeFi traders and AI agents.",
+      sameAs: [],
+    },
+    {
+      "@type": "WebAPI",
+      name: "Smartclaw API",
+      url: `${BASE_URL}/api/openapi`,
+      documentation: `${BASE_URL}/SKILL.md`,
+      description:
+        "REST API providing smart wallet PNL, ROI, and lending rate data across DeFi protocols.",
+      provider: {
+        "@type": "Organization",
+        name: "Smartclaw",
+      },
+      termsOfService: `${BASE_URL}/llms.txt`,
+    },
+    {
+      "@type": "WebSite",
+      name: "Smartclaw",
+      url: BASE_URL,
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${BASE_URL}/api/fx/top-pnl?limit={limit}`,
+        "query-input": "required name=limit",
+      },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -30,6 +90,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="Smartclaw Updates"
+          href="/feed.xml"
+        />
+      </head>
       <body
         className={`${plexSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
@@ -38,3 +110,4 @@ export default function RootLayout({
     </html>
   );
 }
+
