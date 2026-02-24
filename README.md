@@ -97,7 +97,7 @@ To use it from another agent, point at the raw file:
 
 ```
 # OpenClaw
-openclaw skill add https://alidashboard.up.railway.app/SKILL.md
+openclaw skill add https://smartclaw.xyz/SKILL.md
 
 # Or copy SKILL.md into your agent's .agent/skills/ directory
 ```

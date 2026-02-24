@@ -1,5 +1,5 @@
 {
-  "name": "smartflow",
+  "name": "smartclaw",
   "description": "Cross-protocol smart wallet tracking API. Aggregates PNL, ROI, and capital flow signals across protocol leaderboards. f(x) Protocol is the first integrated source, with Perp DEX and Meme Coin integrations coming soon.",
   "url": "/api/openapi",
   "version": "2.0.0",

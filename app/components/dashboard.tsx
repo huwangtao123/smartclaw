@@ -229,7 +229,7 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
           </div>
 
           {/* Right — Terminal Stats */}
-          <TerminalBox title="smartflow API · f(x) protocol" className="animate-enter delay-200">
+          <TerminalBox title="smartclaw API · f(x) protocol" className="animate-enter delay-200">
             <TerminalLine
               command="GET /api/fx/status"
               output={
@@ -654,7 +654,7 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
         <section className="animate-enter delay-400">
           <div className="text-center mb-10">
             <h2 className="text-2xl font-bold text-white tracking-tight">
-              {isZh ? "为什么选择 Smartflow" : "Why Smartflow"}
+              {isZh ? "为什么选择 Smartclaw" : "Why Smartclaw"}
             </h2>
             <p className="mt-2 text-sm text-white/30">
               {isZh
@@ -721,7 +721,7 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
         <hr className="section-divider my-14" />
 
         <footer className="text-center text-xs text-white/15 font-mono">
-          smartflow · {isZh ? "跨协议聪明钱包追踪" : "Cross-Protocol Smart Wallet Tracker"} · Powered by x402
+          smartclaw · {isZh ? "跨协议聪明钱包追踪" : "Cross-Protocol Smart Wallet Tracker"} · Powered by x402
         </footer>
       </div >
     </div >

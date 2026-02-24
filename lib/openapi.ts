@@ -691,7 +691,7 @@ export function buildOpenApiDocument() {
   return {
     openapi: "3.1.0",
     info: {
-      title: "Smartflow API",
+      title: "Smartclaw API",
       version: "2.0.0",
       description:
         "Cross-protocol smart wallet tracking API. Aggregate PNL, ROI, and capital flow signals across protocol leaderboards. f(x) Protocol is the first integrated source, with Perp DEX and Meme Coin integrations coming soon.",

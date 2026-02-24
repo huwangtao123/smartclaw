@@ -51,8 +51,8 @@ describe("ai-plugin.json", () => {
         assert.ok(plugin.name_for_model);
     });
 
-    it("uses smartflow branding", () => {
-        assert.strictEqual(plugin.name_for_model, "smartflow");
+    it("uses smartclaw branding", () => {
+        assert.strictEqual(plugin.name_for_model, "smartclaw");
     });
 
     it("has descriptions for both human and model", () => {
@@ -90,8 +90,8 @@ describe("agents.json", () => {
         assert.ok(agents.description.length > 10);
     });
 
-    it("uses smartflow branding", () => {
-        assert.strictEqual(agents.name, "smartflow");
+    it("uses smartclaw branding", () => {
+        assert.strictEqual(agents.name, "smartclaw");
     });
 
     it("has version", () => {

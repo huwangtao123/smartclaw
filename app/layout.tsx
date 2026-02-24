@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Smartflow — Cross-Protocol Smart Wallet Tracker",
+  title: "Smartclaw — Cross-Protocol Smart Wallet Tracker",
   description:
     "Track smart wallets across protocol leaderboards. Aggregate PNL, ROI, and capital flow signals from f(x) Protocol, Perp DEXes, and more.",
   icons: {

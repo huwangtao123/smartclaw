@@ -1,13 +1,13 @@
 ---
-name: smartflow-api
+name: smartclaw-api
 description: Cross-protocol smart wallet tracking — top PNL wallets (global & per-protocol), fxUSD borrow rates, lending rate comparisons, and premium analytics. Pay-per-call premium via x402.
 ---
 
-# Smartflow API
+# Smartclaw API
 
 Cross-protocol smart wallet tracking. Aggregate PNL, ROI, and capital flow signals across protocol leaderboards.
 
-**Base URL**: `https://alidashboard.up.railway.app`
+**Base URL**: `https://smartclaw.xyz`
 
 ## Endpoints
 
@@ -192,7 +192,7 @@ const payingFetch = wrapFetch(fetch, {
   privateKey: "0x...", // EVM private key with USDC on Base
 });
 
-const res = await payingFetch("https://alidashboard.up.railway.app/api/premium");
+const res = await payingFetch("https://smartclaw.xyz/api/premium");
 const data = await res.json();
 ```
 
@@ -202,7 +202,7 @@ const data = await res.json();
 from x402 import x402_requests  # pip install x402
 
 response = x402_requests.get(
-    "https://alidashboard.up.railway.app/api/premium",
+    "https://smartclaw.xyz/api/premium",
     private_key="0x..."
 )
 data = response.json()

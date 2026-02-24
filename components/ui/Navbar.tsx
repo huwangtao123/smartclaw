@@ -32,7 +32,7 @@ export function Navbar({
                         />
                     </div>
                     <span className="font-mono text-sm font-medium text-neon-400">
-                        smartflow
+                        smartclaw
                     </span>
                 </Link>
 
