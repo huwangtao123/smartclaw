@@ -4,6 +4,7 @@ import type { Address } from "viem";
 import { paymentProxy, x402ResourceServer } from "@x402/next";
 import { HTTPFacilitatorClient } from "@x402/core/server";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
+import { createPaywall, evmPaywall } from "@x402/paywall";
 
 const payTo = process.env.RESOURCE_WALLET_ADDRESS as Address | undefined;
 const rawNetwork = process.env.X402_NETWORK ?? "base";
@@ -273,6 +274,15 @@ const resourceServer = facilitatorClient
     .register(networkCaip2, fxusdScheme)
   : null;
 
+// Build the paywall with EVM wallet connection UI
+const paywall = createPaywall()
+  .withNetwork(evmPaywall)
+  .withConfig({
+    appName: "Smartclaw",
+    testnet: rawNetwork !== "base",
+  })
+  .build();
+
 const configuredProxy =
   payTo && resourceServer
     ? paymentProxy(
@@ -288,6 +298,8 @@ const configuredProxy =
         },
       },
       resourceServer,
+      undefined, // paywallConfig
+      paywall,
     )
     : async (_request: NextRequest) =>
       new NextResponse(
