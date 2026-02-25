@@ -20,12 +20,13 @@
     "@visx/scale": "^4.0.1-alpha.0",
     "@visx/shape": "^4.0.1-alpha.0",
     "@visx/tooltip": "^4.0.1-alpha.0",
+    "@x402/core": "^2.4.0",
+    "@x402/evm": "^2.4.0",
+    "@x402/next": "^2.4.0",
     "next": "^15.5.9",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "viem": "^2.38.4",
-    "x402-axios": "^0.6.6",
-    "x402-next": "^0.6.5"
+    "viem": "^2.38.4"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",

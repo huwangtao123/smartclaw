@@ -106,7 +106,7 @@ openclaw skill add https://smartclaw.xyz/SKILL.md
 
 ## Premium Access Configuration
 
-Premium endpoints are gated behind x402 at $0.01 USDC per call on Base network. Configure the following environment variables:
+Premium endpoints are gated behind x402 at $0.08 fxUSD (20% off) or $0.10 USDC per call on Base network. Configure the following environment variables:
 
 - `PREMIUM_ACCESS_SECRET` – required secret used to sign the premium-access cookie; rotate if compromised.
 - `RESOURCE_WALLET_ADDRESS` – wallet address that receives payments.

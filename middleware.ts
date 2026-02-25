@@ -1,19 +1,13 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import type { Address } from "viem";
-import { safeBase64Decode } from "x402/shared";
-import {
-  type Network,
-  paymentMiddleware,
-  type Resource,
-  type RoutesConfig,
-} from "x402-next";
+import { paymentProxy, x402ResourceServer } from "@x402/next";
+import { HTTPFacilitatorClient } from "@x402/core/server";
+import { ExactEvmScheme } from "@x402/evm/exact/server";
 
 const payTo = process.env.RESOURCE_WALLET_ADDRESS as Address | undefined;
-const rawNetwork = (process.env.X402_NETWORK ?? "base") as Network;
+const rawNetwork = process.env.X402_NETWORK ?? "base";
 const facilitatorEnv = process.env.NEXT_PUBLIC_FACILITATOR_URL;
-const cdpKeyId = process.env.CDP_API_KEY_ID;
-const cdpKeySecret = process.env.CDP_API_KEY_SECRET;
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
 const premiumAccessSecret = process.env.PREMIUM_ACCESS_SECRET;
 const premiumAccessCookieName = "aicharts-premium-access";
@@ -53,12 +47,7 @@ if (!premiumAccessSecret) {
   );
 }
 
-const premiumResource = siteUrl
-  ? (`${siteUrl}/premium` as Resource)
-  : undefined;
-const premiumApiResource = siteUrl
-  ? (`${siteUrl}/api/premium` as Resource)
-  : undefined;
+/* ═══════ Premium access cookie helpers (unchanged) ═══════ */
 
 async function importPremiumAccessKey(secret: string) {
   if (!subtleCrypto) {
@@ -99,102 +88,63 @@ function encodeBase64Url(data: Uint8Array) {
   for (let index = 0; index < data.length; index += 1) {
     binary += String.fromCharCode(data[index]);
   }
-  const nodeBuffer = (globalThis as Record<string, unknown>).Buffer as
-    | {
-      from: (
-        input: string,
-        encoding: string,
-      ) => { toString: (encoding: string) => string };
-    }
-    | undefined;
-  const base64 =
-    typeof btoa === "function"
-      ? btoa(binary)
-      : nodeBuffer?.from
-        ? nodeBuffer.from(binary, "binary").toString("base64")
-        : (() => {
-          throw new Error(
-            "[premium-access] No base64 encoder available in this environment.",
-          );
-        })();
-  return base64.replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/u, "");
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function decodeBase64Url(base64Url: string) {
-  const padded = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-  const padLength = (4 - (padded.length % 4)) % 4;
-  const base64 = padded + "=".repeat(padLength);
-  const nodeBuffer = (globalThis as Record<string, unknown>).Buffer as
-    | {
-      from: (
-        input: string,
-        encoding: string,
-      ) => { toString: (encoding: string) => string };
-    }
-    | undefined;
-  const binary =
-    typeof atob === "function"
-      ? atob(base64)
-      : nodeBuffer?.from
-        ? nodeBuffer.from(base64, "base64").toString("binary")
-        : (() => {
-          throw new Error(
-            "[premium-access] No base64 decoder available in this environment.",
-          );
-        })();
-  const output = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1) {
-    output[index] = binary.charCodeAt(index);
+function decodeBase64Url(str: string) {
+  const padded = str.replace(/-/g, "+").replace(/_/g, "/");
+  const binary = atob(padded);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
   }
-  return output;
+  return bytes;
 }
 
-async function signPremiumAccessPayload(payload: string) {
-  if (!premiumAccessSecret) {
-    return undefined;
-  }
+type PremiumAccessCookiePayload = {
+  issuedAt: string;
+  expiresAt: string;
+};
+
+async function signPremiumAccessPayload(serialized: string) {
+  if (!premiumAccessSecret) return undefined;
   const key = await importPremiumAccessKey(premiumAccessSecret);
-  if (!key || !subtleCrypto) {
-    return undefined;
-  }
+  if (!key || !subtleCrypto) return undefined;
   const signature = await subtleCrypto.sign(
     "HMAC",
     key,
-    premiumAccessEncoder.encode(payload),
+    premiumAccessEncoder.encode(serialized),
   );
   return encodeBase64Url(new Uint8Array(signature));
 }
 
-async function verifyPremiumAccessPayload(payload: string, signature: string) {
-  if (!premiumAccessSecret) {
-    return false;
-  }
+async function verifyPremiumAccessPayload(
+  serialized: string,
+  signature: string,
+) {
+  if (!premiumAccessSecret) return false;
   const key = await importPremiumAccessKey(premiumAccessSecret);
-  if (!key || !subtleCrypto) {
+  if (!key || !subtleCrypto) return false;
+  try {
+    return subtleCrypto.verify(
+      "HMAC",
+      key,
+      decodeBase64Url(signature),
+      premiumAccessEncoder.encode(serialized),
+    );
+  } catch {
     return false;
   }
-  const signatureBytes = decodeBase64Url(signature);
-  return subtleCrypto.verify(
-    "HMAC",
-    key,
-    signatureBytes,
-    premiumAccessEncoder.encode(payload),
-  );
 }
-
-type PremiumAccessCookiePayload = {
-  expiresAt: string;
-};
 
 async function createPremiumAccessCookie(expiresAt: Date) {
   const payload: PremiumAccessCookiePayload = {
+    issuedAt: new Date().toISOString(),
     expiresAt: expiresAt.toISOString(),
   };
   const serialized = JSON.stringify(payload);
   const signature = await signPremiumAccessPayload(serialized);
-  if (!signature) {
-    return undefined;
-  }
+  if (!signature) return undefined;
   const encodedPayload = encodeBase64Url(
     premiumAccessEncoder.encode(serialized),
   );
@@ -252,63 +202,82 @@ async function readPremiumAccessCookie(
   return { valid: true, expiresAt };
 }
 
+/* ═══════ x402 v2 setup ═══════ */
+
+// Map legacy network names to CAIP-2
+const networkCaip2 = (rawNetwork === "base"
+  ? "eip155:8453"
+  : rawNetwork === "base-sepolia"
+    ? "eip155:84532"
+    : rawNetwork) as `${string}:${string}`;
+
 const facilitatorUrl =
   facilitatorEnv !== undefined
-    ? (facilitatorEnv as Resource)
+    ? facilitatorEnv
     : rawNetwork === "base"
       ? null
-      : ("https://facilitator.heurist.xyz" as Resource);
+      : "https://facilitator.heurist.xyz";
 
-if (!payTo) {
-  console.warn(
-    "[x402] Missing RESOURCE_WALLET_ADDRESS environment variable. Premium gateways will respond with 500 until configured.",
-  );
-}
-
-if (!facilitatorUrl) {
+if (rawNetwork === "base" && !facilitatorEnv) {
   console.warn(
     "[x402] NEXT_PUBLIC_FACILITATOR_URL is required when X402_NETWORK=base. Configure a mainnet facilitator that supports Base.",
   );
 }
 
-const routes: RoutesConfig = {
-  "/premium": {
-    price: "$0.01",
-    network: rawNetwork,
-    config: {
-      description: "Access AliDashboard premium leaderboard insights",
-      resource: premiumResource,
-    },
-  },
-  "/api/premium": {
-    price: "$0.01",
-    network: rawNetwork,
-    config: {
-      description: "Access Smartclaw premium leaderboard API",
-      mimeType: "application/json",
-      discoverable: false,
-      resource: premiumApiResource,
-    },
-  },
-} as const;
-
-const configuredMiddleware =
-  payTo && facilitatorUrl
-    ? paymentMiddleware(
+// Build the payment accepts array: USDC + fxUSD
+const premiumAccepts = payTo
+  ? [
+    // Option 1: Pay $0.08 in fxUSD (20% off — default)
+    {
+      scheme: "exact" as const,
+      network: networkCaip2,
       payTo,
-      routes,
-      {
-        url: facilitatorUrl,
+      price: {
+        amount: "80000000000000000",  // 0.08 fxUSD (18 decimals)
+        asset: "0x55380fe7A1910dFf29A47B622057ab4139DA42C5",
+        extra: {
+          eip712: {
+            name: "FxUSD",
+            version: "2",
+          },
+        },
       },
+    },
+    // Option 2: Pay $0.10 in USDC
+    {
+      scheme: "exact" as const,
+      price: "$0.10",
+      network: networkCaip2,
+      payTo,
+    },
+  ]
+  : [];
+
+// Create the x402 resource server
+const facilitatorClient = facilitatorUrl
+  ? new HTTPFacilitatorClient({ url: facilitatorUrl })
+  : null;
+
+const resourceServer = facilitatorClient
+  ? new x402ResourceServer(facilitatorClient)
+    .register(networkCaip2, new ExactEvmScheme())
+  : null;
+
+const configuredProxy =
+  payTo && resourceServer
+    ? paymentProxy(
       {
-        appName: "AliDashboard Premium",
-        appLogo: "/fx-protocol-icon.svg",
-        ...(cdpKeyId && cdpKeySecret
-          ? {
-            sessionTokenEndpoint: "/api/x402/session-token",
-          }
-          : {}),
+        "/premium": {
+          accepts: premiumAccepts,
+          description: "Access Smartclaw premium leaderboard insights",
+        },
+        "/api/premium": {
+          accepts: premiumAccepts,
+          description: "Access Smartclaw premium leaderboard API",
+          mimeType: "application/json",
+        },
       },
+      resourceServer,
     )
     : async (_request: NextRequest) =>
       new NextResponse(
@@ -322,6 +291,8 @@ const configuredMiddleware =
           headers: { "Content-Type": "application/json" },
         },
       );
+
+/* ═══════ Main middleware ═══════ */
 
 export async function middleware(request: NextRequest) {
   const isPrefetch =
@@ -363,7 +334,7 @@ export async function middleware(request: NextRequest) {
 
   let response: NextResponse;
   try {
-    response = await configuredMiddleware(request);
+    response = await configuredProxy(request);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : String(error ?? "Unknown error");
@@ -375,7 +346,7 @@ export async function middleware(request: NextRequest) {
       );
     } else {
       console.error(
-        "[middleware] paymentMiddleware threw an error. Premium access blocked.",
+        "[middleware] paymentProxy threw an error. Premium access blocked.",
         error,
       );
     }
@@ -406,6 +377,7 @@ export async function middleware(request: NextRequest) {
     );
   }
 
+  // Normalize resource URLs in 402 JSON responses
   if (
     response.status === 402 &&
     response.headers.get("content-type")?.includes("application/json")
@@ -414,12 +386,11 @@ export async function middleware(request: NextRequest) {
       const payload = await response.clone().json();
       const forwardedHost =
         request.headers.get("x-forwarded-host") ?? request.nextUrl.host;
-      const forwardedProto =
+      const fwdProto =
         request.headers.get("x-forwarded-proto") ??
         request.nextUrl.protocol.replace(":", "");
-      const baseUrl = siteUrl ?? `${forwardedProto}://${forwardedHost}`;
-      const computedResource =
-        `${baseUrl}${request.nextUrl.pathname}` as Resource;
+      const baseUrl = siteUrl ?? `${fwdProto}://${forwardedHost}`;
+      const computedResource = `${baseUrl}${request.nextUrl.pathname}`;
       console.info("[middleware] original accepts", payload?.accepts);
       const updated = {
         ...payload,
@@ -447,16 +418,17 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Normalize resource URLs in 402 HTML responses (paywall)
   if (
     response.status === 402 &&
     response.headers.get("content-type")?.includes("text/html")
   ) {
     const forwardedHost =
       request.headers.get("x-forwarded-host") ?? request.nextUrl.host;
-    const forwardedProto =
+    const fwdProto =
       request.headers.get("x-forwarded-proto") ??
       request.nextUrl.protocol.replace(":", "");
-    const baseUrl = siteUrl ?? `${forwardedProto}://${forwardedHost}`;
+    const baseUrl = siteUrl ?? `${fwdProto}://${forwardedHost}`;
     const currentPath = request.nextUrl.pathname;
     const normalizedResource = `${baseUrl}${currentPath}`;
 
@@ -478,10 +450,11 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Issue premium access cookie on successful payment
   const paymentResponseHeader = response.headers.get("X-PAYMENT-RESPONSE");
   if (paymentResponseHeader) {
     try {
-      const decoded = safeBase64Decode(paymentResponseHeader);
+      const decoded = atob(paymentResponseHeader);
       const paymentResponse = JSON.parse(decoded) as {
         success?: boolean;
         expiresAt?: string;

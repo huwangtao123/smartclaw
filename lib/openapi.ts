@@ -525,7 +525,7 @@ const endpointDefinitions: EndpointDefinition[] = [
       tags: ["Premium", "f(x) Protocol"],
       summary: "Premium f(x) Protocol leaderboard metrics",
       description:
-        "Returns premium leaderboard insights for f(x) Protocol including top traders by PNL and ROI. Requires x402 USDC payment ($0.01 on Base network). Requests without a premium cookie receive a 402 payment required response.",
+        "Returns premium leaderboard insights for f(x) Protocol including top traders by PNL and ROI. Requires x402 payment ($0.08 fxUSD or $0.10 USDC on Base network). Requests without a premium cookie receive a 402 payment required response.",
       security: [
         {
           PremiumAccessCookie: [],
@@ -715,7 +715,7 @@ export function buildOpenApiDocument() {
       {
         name: "Premium",
         description:
-          "Endpoints gated behind an x402 USDC paywall ($0.01 on Base network). Requires explicit user consent before payment.",
+          "Endpoints gated behind an x402 paywall ($0.08 fxUSD or $0.10 USDC on Base network). Requires explicit user consent before payment.",
       },
       {
         name: "Discovery",

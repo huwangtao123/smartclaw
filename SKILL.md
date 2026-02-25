@@ -163,7 +163,7 @@ Returns borrow rates across Aave, CrvUSD, and fxUSD for comparison.
 
 ### 6. Premium Leaderboard Metrics
 
-**`GET /api/premium`** — Requires x402 payment ($0.01 USDC on Base)
+**`GET /api/premium`** — Requires x402 payment ($0.08 fxUSD or $0.10 USDC on Base)
 
 Returns full top-10 traders by PNL and ROI.
 
@@ -208,7 +208,7 @@ data = response.json()
 
 ### Cost
 
-**$0.01 USDC** per call on Base network.
+**$0.08 fxUSD** (20% off) or **$0.10 USDC** per call on Base network.
 
 ## URL Pattern
 

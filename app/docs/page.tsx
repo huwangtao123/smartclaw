@@ -47,7 +47,7 @@ const endpoints = [
         method: "GET",
         path: "/api/premium",
         description: "Premium leaderboard metrics (top-10 by PNL & ROI)",
-        auth: "x402 ($0.01)",
+        auth: "x402 ($0.08 fxUSD / $0.10 USDC)",
     },
 ];
 
@@ -64,8 +64,8 @@ const facts = [
     },
     {
         label: "Premium cost",
-        value: "$0.01",
-        detail: "USDC per call on Base network via x402",
+        value: "$0.08",
+        detail: "fxUSD per call (20% off) or $0.10 USDC on Base via x402",
     },
     {
         label: "Data source",
@@ -85,7 +85,7 @@ const faqs = [
     },
     {
         q: "What does premium access include?",
-        a: "Premium endpoints return the top-10 traders ranked by PNL and ROI. Each call costs $0.01 USDC on Base network, paid automatically via the x402 payment protocol.",
+        a: "Premium endpoints return the top-10 traders ranked by PNL and ROI. Each call costs $0.08 fxUSD (20% off) or $0.10 USDC on Base network, paid automatically via the x402 payment protocol.",
     },
     {
         q: "How fresh is the data?",

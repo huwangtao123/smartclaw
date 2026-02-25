@@ -306,7 +306,7 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
                 <>
                   支付{" "}
                   <span className="font-semibold text-neon-400">
-                    $0.01 USDC
+                    $0.08 fxUSD
                   </span>
                   （通过 x402 支付流）解锁完整的 PNL 与 ROI
                   前十名钱包、净额与动能脉冲。
@@ -315,9 +315,9 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
                 <>
                   Unlock the full Top 10 PNL and ROI cohorts for{" "}
                   <span className="font-semibold text-neon-400">
-                    $0.01 USDC
+                    $0.08 fxUSD
                   </span>{" "}
-                  via the x402 payment flow.
+                  (20% off) or $0.10 USDC via the x402 payment flow.
                 </>
               )}
             </div>
@@ -571,14 +571,14 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
               </div>
               <p className="mt-2 text-xs text-white/30">
                 {isZh
-                  ? "支付 $0.01 USDC（x402）后，可查看完整前十名 PNL 钱包。"
-                  : "Pay $0.01 USDC via x402 for the complete top 10 PNL wallets."}
+                  ? "支付 $0.08 fxUSD 或 $0.10 USDC（x402）后，可查看完整前十名 PNL 钱包。"
+                  : "Pay $0.08 fxUSD (20% off) or $0.10 USDC via x402 for the complete top 10 PNL wallets."}
               </p>
               <Link
                 href="/premium"
                 className="mt-4 w-full inline-flex items-center justify-center rounded-lg bg-neon-500 px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.2em] text-black transition hover:bg-neon-400 active:scale-[0.97]"
               >
-                {isZh ? "立即解锁" : "Unlock for $0.01"}
+                {isZh ? "立即解锁" : "Unlock for $0.08 fxUSD"}
               </Link>
             </div>
           </GlassCard>
@@ -635,14 +635,14 @@ export default function Dashboard({ metrics }: { metrics: DashboardMetrics }) {
               </div>
               <p className="mt-2 text-xs text-white/30">
                 {isZh
-                  ? "支付 $0.01 USDC（x402）可解锁完整前十 ROI 地址。"
-                  : "Unlock for $0.01 USDC via x402 for the full top 10 ROI wallets."}
+                  ? "支付 $0.08 fxUSD 或 $0.10 USDC（x402）可解锁完整前十 ROI 地址。"
+                  : "Unlock for $0.08 fxUSD (20% off) or $0.10 USDC via x402 for the full top 10 ROI wallets."}
               </p>
               <Link
                 href="/premium"
                 className="mt-4 w-full inline-flex items-center justify-center rounded-lg bg-neon-500 px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.2em] text-black transition hover:bg-neon-400 active:scale-[0.97]"
               >
-                {isZh ? "立即解锁" : "Unlock for $0.01"}
+                {isZh ? "立即解锁" : "Unlock for $0.08 fxUSD"}
               </Link>
             </div>
           </GlassCard>
