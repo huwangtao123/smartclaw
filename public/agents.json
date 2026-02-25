@@ -96,8 +96,8 @@
       "description": "No authentication required."
     },
     "x402_cookie": {
-      "description": "Pay $0.01 USDC per call via x402 protocol on Base network.",
-      "flow": "POST /api/x402/session-token to initiate checkout, then access premium endpoints with the resulting cookie."
+      "description": "Pay $0.08 fxUSD (20% off) or $0.10 USDC per call via x402 protocol on Base network.",
+      "flow": "Access premium endpoints; the x402 paywall handles wallet connection and payment automatically."
     }
   }
 }

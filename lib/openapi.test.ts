@@ -31,7 +31,6 @@ describe("OpenAPI spec", () => {
             "/api/fx/status",
             "/api/premium",
             "/api/rates",
-            "/api/x402/session-token",
             "/api/openapi",
         ];
         for (const p of expected) {
@@ -69,7 +68,6 @@ describe("OpenAPI spec", () => {
             "getFxFxusdRate",
             "getRates",
             "getPremiumMetrics",
-            "createX402SessionToken",
             "getOpenApiSpec",
         ];
         for (const id of expected) {
@@ -93,13 +91,15 @@ describe("OpenAPI spec", () => {
         }
     });
 
-    it("marks POST session-token as consequential", () => {
+    it("premium description mentions fxUSD and USDC pricing", () => {
         const paths = doc.paths as Record<
             string,
             Record<string, Record<string, unknown>>
         >;
-        const sessionToken = paths["/api/x402/session-token"];
-        assert.strictEqual(sessionToken.post["x-openai-isConsequential"], true);
+        const premium = paths["/api/premium"].get;
+        const description = premium.description as string;
+        assert.ok(description.includes("fxUSD"), "premium description should mention fxUSD");
+        assert.ok(description.includes("USDC"), "premium description should mention USDC");
     });
 
     it("has expected tags", () => {

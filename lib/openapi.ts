@@ -609,37 +609,6 @@ const endpointDefinitions: EndpointDefinition[] = [
     },
   },
 
-  /* ── Payment Infrastructure ── */
-  {
-    path: "/api/x402/session-token",
-    method: "post",
-    operation: {
-      operationId: "createX402SessionToken",
-      "x-openai-isConsequential": true,
-      tags: ["Premium"],
-      summary: "Initiate x402 session token exchange",
-      description:
-        "Forwards the request body to the x402 payment infrastructure so clients can initiate a premium checkout flow. This initiates a payment — call only when the user explicitly wants to unlock premium access.",
-      requestBody: {
-        required: true,
-        content: {
-          "application/json": {
-            schema: {
-              type: "object",
-              description:
-                "Opaque payload forwarded to x402. Refer to x402 documentation for field definitions.",
-            },
-          },
-        },
-      },
-      responses: {
-        default: {
-          $ref: "#/components/responses/X402Proxy",
-        },
-      },
-    },
-  },
-
   /* ── Discovery ── */
   {
     path: "/api/openapi",

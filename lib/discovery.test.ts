@@ -34,6 +34,15 @@ describe("llms.txt", () => {
         assert.ok(content.toLowerCase().includes("x402"));
     });
 
+    it("mentions fxUSD pricing", () => {
+        assert.ok(content.includes("fxUSD"), "llms.txt should mention fxUSD");
+    });
+
+    it("mentions both fxUSD and USDC", () => {
+        assert.ok(content.includes("$0.08"), "llms.txt should mention $0.08 fxUSD price");
+        assert.ok(content.includes("$0.10 USDC") || content.includes("$0.01 USDC") || content.includes("USDC"), "llms.txt should mention USDC");
+    });
+
     it("has policy section", () => {
         assert.ok(content.includes("## Policy"));
     });
@@ -159,7 +168,11 @@ describe("agents.json", () => {
         assert.ok(agents.auth_schemes.x402_cookie);
     });
 
-    it("x402 auth mentions $0.01 per call", () => {
-        assert.ok(agents.auth_schemes.x402_cookie.description.includes("$0.01"));
+    it("x402 auth mentions fxUSD and USDC pricing", () => {
+        const desc = agents.auth_schemes.x402_cookie.description;
+        assert.ok(desc.includes("fxUSD"), "x402 auth should mention fxUSD");
+        assert.ok(desc.includes("USDC"), "x402 auth should mention USDC");
+        assert.ok(desc.includes("$0.08"), "x402 auth should mention $0.08 fxUSD price");
+        assert.ok(desc.includes("$0.10"), "x402 auth should mention $0.10 USDC price");
     });
 });
