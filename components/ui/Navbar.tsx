@@ -24,9 +24,10 @@ export function Navbar({
                 <Link href="/" className="flex items-center gap-2.5 group">
                     <div className="relative h-7 w-7 transition-transform group-hover:scale-110 duration-300">
                         <Image
-                            src="/fx-protocol-icon.svg"
-                            alt="f(x) Protocol"
+                            src="/brand_logo.svg"
+                            alt="Smartclaw"
                             fill
+                            className="object-contain"
                             sizes="28px"
                             priority
                         />

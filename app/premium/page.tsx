@@ -184,36 +184,6 @@ export default async function PremiumPage() {
             </div>
           </div>
 
-          <div className="mt-10 overflow-hidden rounded-3xl border border-emerald-400/30 bg-slate-950/60">
-            <div className="relative aspect-[16/9] w-full">
-              <video
-                className="h-full w-full object-cover"
-                src="/media/girl.mp4"
-                autoPlay
-                loop
-                muted
-                playsInline
-                controls
-              />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-slate-950/60 via-slate-950/0 to-transparent" />
-              <div className="pointer-events-none absolute bottom-6 left-6 right-6 flex flex-col gap-2 text-sm text-emerald-50 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.35em] text-emerald-200/80">
-                    Live Momentum Reel
-                  </p>
-                  <p className="mt-1 max-w-xl text-emerald-50/90">
-                    Visualize how AliDashboard surfaces decisive order flow.
-                    This highlight reel showcases the wallets driving current
-                    PNL momentum.
-                  </p>
-                </div>
-                <span className="rounded-full border border-emerald-300/40 bg-emerald-400/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-emerald-100">
-                  HD · Looping
-                </span>
-              </div>
-            </div>
-          </div>
-
           <div className="mt-10 flex flex-col gap-4 text-[10px] text-slate-500 uppercase tracking-widest sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap gap-x-4 gap-y-2">
               <span className="text-neon-300 font-bold">Included:</span>

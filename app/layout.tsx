@@ -21,8 +21,13 @@ export const metadata: Metadata = {
   description:
     "Track smart wallets across protocol leaderboards. Aggregate PNL, ROI, and capital flow signals from f(x) Protocol, Perp DEXes, and more.",
   icons: {
-    icon: "/fx-protocol-icon.svg",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
+  manifest: "/site.webmanifest",
   metadataBase: new URL(BASE_URL),
   openGraph: {
     title: "Smartclaw — Cross-Protocol Smart Wallet Tracker",
@@ -31,12 +36,14 @@ export const metadata: Metadata = {
     url: BASE_URL,
     siteName: "Smartclaw",
     type: "website",
+    images: [{ url: "/og_1200x630.png", width: 1200, height: 630 }],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Smartclaw",
     description:
       "Cross-protocol smart wallet tracking API for AI agents.",
+    images: ["/og_1200x630.png"],
   },
   alternates: {
     types: {
