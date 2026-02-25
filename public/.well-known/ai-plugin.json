@@ -3,7 +3,7 @@
   "name_for_human": "Smartclaw",
   "name_for_model": "smartclaw",
   "description_for_human": "Cross-protocol smart wallet tracking. Aggregate PNL, ROI, and capital flow signals from f(x) Protocol, Perp DEXes, and more.",
-  "description_for_model": "Cross-protocol smart wallet tracking API. Use getTopPnl for global top wallets across all protocols. Use getFxTopPnl for f(x) Protocol-specific top wallets. Use getFxFxusdRate to check fxUSD borrow APR. Use getRates for cross-protocol lending rate comparisons (Aave, CrvUSD, fxUSD). Premium endpoints require x402 USDC payment.",
+  "description_for_model": "Cross-protocol smart wallet tracking API. Use getTopPnl for global top wallets across all protocols. Use getFxTopPnl for f(x) Protocol-specific top wallets. Use getFxFxusdRate to check fxUSD borrow APR. Use getRates for cross-protocol lending rate comparisons (Aave, CrvUSD, fxUSD). Premium endpoints require x402 fxUSD payment.",
   "auth": {
     "type": "none"
   },

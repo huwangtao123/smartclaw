@@ -109,7 +109,7 @@ const jsonLd = {
           name: "How much does Smartclaw cost?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Most endpoints are free and require no authentication. Premium endpoints cost $0.08 fxUSD (20% off) or $0.10 USDC per call on Base network using the x402 payment protocol.",
+            text: "Most endpoints are free and require no authentication. Premium endpoints cost $0.01 fxUSD per call on Base network using the x402 payment protocol.",
           },
         },
         {

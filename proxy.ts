@@ -225,25 +225,17 @@ if (rawNetwork === "base" && !facilitatorEnv) {
   );
 }
 
-// fxUSD token config
+// fxUSD token config — single source of truth for pricing
 const FXUSD_ADDRESS = "0x55380fe7A1910dFf29A47B622057ab4139DA42C5";
 const FXUSD_DECIMALS = 18;
-const FXUSD_PRICE = 0.08; // dollar amount that maps to fxUSD
+const FXUSD_PRICE = 0.01; // dollar amount per premium API call
 
-// Build the payment accepts array: fxUSD first (20% off), USDC second
+// Build the payment accepts array (fxUSD only)
 const premiumAccepts = payTo
   ? [
-    // Option 1: Pay $0.08 in fxUSD (20% off — default)
     {
       scheme: "exact" as const,
       price: `$${FXUSD_PRICE}`,
-      network: networkCaip2,
-      payTo,
-    },
-    // Option 2: Pay $0.10 in USDC
-    {
-      scheme: "exact" as const,
-      price: "$0.10",
       network: networkCaip2,
       payTo,
     },
@@ -252,17 +244,17 @@ const premiumAccepts = payTo
 
 // Create the x402 resource server with fxUSD custom money parser
 const fxusdScheme = new ExactEvmScheme();
-// Register fxUSD parser: when amount matches $0.08, convert to fxUSD token
+// Register fxUSD parser: convert dollar amount to fxUSD token atomics
 fxusdScheme.registerMoneyParser(async (amount: number, _network) => {
   if (Math.abs(amount - FXUSD_PRICE) < 0.0001) {
     const atomicAmount = BigInt(Math.round(amount * 10 ** FXUSD_DECIMALS)).toString();
     return {
       amount: atomicAmount,
       asset: FXUSD_ADDRESS,
-      extra: { eip712: { name: "FxUSD", version: "2" } },
+      extra: { name: "FxUSD", version: "2" },
     };
   }
-  return null; // fall through to default USDC parser
+  return null; // amount doesn't match fxUSD price
 });
 
 const facilitatorClient = facilitatorUrl
@@ -274,9 +266,61 @@ const resourceServer = facilitatorClient
     .register(networkCaip2, fxusdScheme)
   : null;
 
-// Build the paywall with EVM wallet connection UI
+// Build the paywall with EVM wallet connection UI.
+// Wrap evmPaywall to fix amount display for fxUSD (18-decimal tokens).
+// The upstream evmPaywall.generateHtml hardcodes `amount / 1e6` (USDC decimals),
+// so we convert 18-decimal atomic amounts to 6-decimal equivalents before display.
+const fixedEvmPaywall = {
+  supports: evmPaywall.supports.bind(evmPaywall),
+  generateHtml(
+    requirement: Parameters<typeof evmPaywall.generateHtml>[0],
+    paymentRequired: Parameters<typeof evmPaywall.generateHtml>[1],
+    config: Parameters<typeof evmPaywall.generateHtml>[2],
+  ) {
+    const asset = (requirement as { asset?: string }).asset;
+    if (asset && asset.toLowerCase() === FXUSD_ADDRESS.toLowerCase()) {
+      // Convert 18-decimal atomic amount to 6-decimal equivalent
+      // so the paywall's hardcoded /1e6 shows the correct dollar value
+      const fixedReq = {
+        ...requirement,
+        amount: requirement.amount
+          ? String(
+            Number(BigInt(requirement.amount) / BigInt(10 ** (FXUSD_DECIMALS - 6))),
+          )
+          : requirement.amount,
+        ...(requirement.maxAmountRequired
+          ? {
+            maxAmountRequired: String(
+              Number(
+                BigInt(requirement.maxAmountRequired) /
+                BigInt(10 ** (FXUSD_DECIMALS - 6)),
+              ),
+            ),
+          }
+          : {}),
+      };
+      // Generate the HTML, then patch the hardcoded USDC references:
+      // 1. Replace USDC contract addresses with fxUSD so balance checks + payments use fxUSD
+      // 2. Fix balance display: formatUnits(balance, 6) → formatUnits(balance, 18) 
+      // 3. Replace display name "USDC" → "fxUSD"
+      const USDC_MAINNET = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+      const USDC_TESTNET = "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
+      const USDC_ETH_L1 = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+      const html = evmPaywall.generateHtml(fixedReq as typeof requirement, paymentRequired, config);
+      return html
+        .replaceAll(USDC_MAINNET, FXUSD_ADDRESS)
+        .replaceAll(USDC_TESTNET, FXUSD_ADDRESS)
+        .replaceAll(USDC_ETH_L1, FXUSD_ADDRESS)
+        // Fix balance display: format with 18 decimals, then round to 3 decimal places
+        .replaceAll('q=Nm(M,6)', `q=parseFloat(Nm(M,${FXUSD_DECIMALS})).toFixed(3)`)
+        .replaceAll('USDC', 'fxUSD');
+    }
+    return evmPaywall.generateHtml(requirement, paymentRequired, config);
+  },
+};
+
 const paywall = createPaywall()
-  .withNetwork(evmPaywall)
+  .withNetwork(fixedEvmPaywall)
   .withConfig({
     appName: "Smartclaw",
     testnet: rawNetwork !== "base",
@@ -316,7 +360,7 @@ const configuredProxy =
 
 /* ═══════ Main middleware ═══════ */
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const isPrefetch =
     request.headers.get("x-middleware-prefetch") === "1" ||
     request.headers.get("purpose") === "prefetch";

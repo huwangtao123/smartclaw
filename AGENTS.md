@@ -11,15 +11,15 @@ This project exposes a set of APIs for **cross-protocol smart wallet tracking**.
 
 ## Quick Reference
 
-| operationId              | Endpoint                       | Auth                             |
-| ------------------------ | ------------------------------ | -------------------------------- |
-| `getTopPnl`              | `GET /api/top-pnl`             | None (global)                    |
-| `getFxTopPnl`            | `GET /api/fx/top-pnl`          | None                             |
-| `getFxStatus`            | `GET /api/fx/status`           | None                             |
-| `getFxFxusdRate`         | `GET /api/fx/fxusd-rate`       | None                             |
-| `getRates`               | `GET /api/rates`               | None                             |
-| `getPremiumMetrics`      | `GET /api/premium`             | x402 ($0.08 fxUSD / $0.10 USDC) |
-| `createX402SessionToken` | `POST /api/x402/session-token` | None                             |
+| operationId              | Endpoint                       | Auth               |
+| ------------------------ | ------------------------------ | ------------------ |
+| `getTopPnl`              | `GET /api/top-pnl`             | None (global)      |
+| `getFxTopPnl`            | `GET /api/fx/top-pnl`          | None               |
+| `getFxStatus`            | `GET /api/fx/status`           | None               |
+| `getFxFxusdRate`         | `GET /api/fx/fxusd-rate`       | None               |
+| `getRates`               | `GET /api/rates`               | None               |
+| `getPremiumMetrics`      | `GET /api/premium`             | x402 ($0.01 fxUSD) |
+| `createX402SessionToken` | `POST /api/x402/session-token` | None               |
 
 ## URL Structure
 
@@ -33,5 +33,5 @@ This project exposes a set of APIs for **cross-protocol smart wallet tracking**.
 
 - Read `llms.txt` first for a quick overview, then use the OpenAPI spec for full details.
 - Public endpoints are safe to call automatically (`x-openai-isConsequential: false`).
-- Premium endpoints require x402 USDC payment — only call with explicit user consent.
+- Premium endpoints require x402 fxUSD payment — only call with explicit user consent.
 - When modifying API endpoints, update the discovery files to stay in sync.

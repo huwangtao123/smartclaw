@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Premium Analytics — Smartclaw",
   description:
-    "Top-10 traders by PNL and ROI on f(x) Protocol. Volume trends, win rates, and momentum indicators. $0.08 fxUSD (20% off) or $0.10 USDC per API call via x402.",
+    "Top-10 traders by PNL and ROI on f(x) Protocol. Volume trends, win rates, and momentum indicators. $0.01 fxUSD per API call via x402.",
   alternates: {
     canonical: "/premium",
   },
@@ -53,9 +53,9 @@ const premiumJsonLd = {
     "Top-10 traders by PNL and ROI on f(x) Protocol. Volume trends, win rates, and momentum indicators.",
   offers: {
     "@type": "Offer",
-    price: "0.08",
+    price: "0.01",
     priceCurrency: "USD",
-    description: "Per API call via x402, pay $0.08 in fxUSD (20% off) or $0.10 USDC on Base network",
+    description: "Per API call via x402, pay $0.01 in fxUSD on Base network",
   },
   provider: {
     "@type": "Organization",
@@ -135,7 +135,7 @@ export default async function PremiumPage() {
       <section className="sr-only" aria-label="Premium Analytics Summary">
         <h1>Smartclaw Premium Analytics</h1>
         <p>
-          Top-10 f(x) Protocol traders ranked by PNL and ROI. Access via GET /api/premium for $0.08 fxUSD (20% off) or $0.10 USDC per call using the x402 payment protocol on Base network.
+          Top-10 f(x) Protocol traders ranked by PNL and ROI. Access via GET /api/premium for $0.01 fxUSD per call using the x402 payment protocol on Base network.
           Currently tracking {metrics.totalTraders.toLocaleString()} wallets with {formatCurrency(metrics.totalVol)} in total volume.
         </p>
       </section>
@@ -145,7 +145,7 @@ export default async function PremiumPage() {
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-3xl">
               <div className="label-subtle !text-neon-300">
-                x402 Unlock · $0.08 fxUSD (20% off) or $0.10 USDC · Unlocks Top 10 PNL · ROI · Volume
+                x402 Unlock · $0.01 fxUSD · Unlocks Top 10 PNL · ROI · Volume
               </div>
               <h1 className="mt-6 text-4xl font-bold tracking-tight text-white sm:text-5xl">
                 Premium Leaderboard Intelligence

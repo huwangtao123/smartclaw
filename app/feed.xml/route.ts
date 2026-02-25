@@ -28,7 +28,7 @@ export async function GET() {
             title: "Premium Leaderboard Analytics via x402",
             link: `${BASE_URL}/api/premium`,
             description:
-                "Top-10 traders by PNL and ROI, available for $0.08 fxUSD (20% off) or $0.10 USDC per request using the x402 payment protocol.",
+                "Top-10 traders by PNL and ROI, available for $0.01 fxUSD per request using the x402 payment protocol.",
             pubDate: "2026-02-24T00:00:00Z",
             guid: "smartclaw-premium-launch",
         },

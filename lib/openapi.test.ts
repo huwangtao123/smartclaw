@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, it } from "node:test";
 
+// @ts-ignore: Node test runner with type stripping requires the .ts extension
 import { buildOpenApiDocument } from "./openapi.ts";
 
 describe("OpenAPI spec", () => {
@@ -91,7 +92,7 @@ describe("OpenAPI spec", () => {
         }
     });
 
-    it("premium description mentions fxUSD and USDC pricing", () => {
+    it("premium description mentions fxUSD pricing", () => {
         const paths = doc.paths as Record<
             string,
             Record<string, Record<string, unknown>>
@@ -99,7 +100,6 @@ describe("OpenAPI spec", () => {
         const premium = paths["/api/premium"].get;
         const description = premium.description as string;
         assert.ok(description.includes("fxUSD"), "premium description should mention fxUSD");
-        assert.ok(description.includes("USDC"), "premium description should mention USDC");
     });
 
     it("has expected tags", () => {

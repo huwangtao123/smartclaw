@@ -163,7 +163,7 @@ Returns borrow rates across Aave, CrvUSD, and fxUSD for comparison.
 
 ### 6. Premium Leaderboard Metrics
 
-**`GET /api/premium`** — Requires x402 payment ($0.08 fxUSD or $0.10 USDC on Base)
+**`GET /api/premium`** — Requires x402 payment ($0.01 fxUSD on Base)
 
 Returns full top-10 traders by PNL and ROI.
 
@@ -179,7 +179,7 @@ Returns full top-10 traders by PNL and ROI.
 
 ## x402 Payment (Premium Access)
 
-Premium endpoints return `402 Payment Required`. The agent needs a Base wallet with USDC.
+Premium endpoints return `402 Payment Required`. The agent needs a Base wallet with fxUSD.
 
 ### x402-fetch (recommended)
 
@@ -187,7 +187,7 @@ Premium endpoints return `402 Payment Required`. The agent needs a Base wallet w
 import { wrapFetch } from "x402-fetch"; // npm install x402-fetch
 
 const payingFetch = wrapFetch(fetch, {
-  privateKey: "0x...", // EVM private key with USDC on Base
+  privateKey: "0x...", // EVM private key with fxUSD on Base
 });
 
 const res = await payingFetch("https://smartclaw.xyz/api/premium");
@@ -208,7 +208,7 @@ data = response.json()
 
 ### Cost
 
-**$0.08 fxUSD** (20% off) or **$0.10 USDC** per call on Base network.
+**$0.01 fxUSD** per call on Base network.
 
 ## URL Pattern
 
