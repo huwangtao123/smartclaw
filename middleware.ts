@@ -224,10 +224,17 @@ if (rawNetwork === "base" && !facilitatorEnv) {
   );
 }
 
-// Build the payment accepts array: USDC + fxUSD
+// Build the payment accepts array: USDC (displayed in paywall) + fxUSD (20% off for agents)
 const premiumAccepts = payTo
   ? [
-    // Option 1: Pay $0.08 in fxUSD (20% off — default)
+    // Option 1: Pay $0.10 in USDC (shown in paywall UI)
+    {
+      scheme: "exact" as const,
+      price: "$0.10",
+      network: networkCaip2,
+      payTo,
+    },
+    // Option 2: Pay $0.08 in fxUSD (20% off — preferred for agents)
     {
       scheme: "exact" as const,
       network: networkCaip2,
@@ -242,13 +249,6 @@ const premiumAccepts = payTo
           },
         },
       },
-    },
-    // Option 2: Pay $0.10 in USDC
-    {
-      scheme: "exact" as const,
-      price: "$0.10",
-      network: networkCaip2,
-      payTo,
     },
   ]
   : [];
