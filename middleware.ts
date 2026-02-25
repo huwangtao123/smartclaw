@@ -224,43 +224,53 @@ if (rawNetwork === "base" && !facilitatorEnv) {
   );
 }
 
-// Build the payment accepts array: USDC (displayed in paywall) + fxUSD (20% off for agents)
+// fxUSD token config
+const FXUSD_ADDRESS = "0x55380fe7A1910dFf29A47B622057ab4139DA42C5";
+const FXUSD_DECIMALS = 18;
+const FXUSD_PRICE = 0.08; // dollar amount that maps to fxUSD
+
+// Build the payment accepts array: fxUSD first (20% off), USDC second
 const premiumAccepts = payTo
   ? [
-    // Option 1: Pay $0.10 in USDC (shown in paywall UI)
+    // Option 1: Pay $0.08 in fxUSD (20% off — default)
+    {
+      scheme: "exact" as const,
+      price: `$${FXUSD_PRICE}`,
+      network: networkCaip2,
+      payTo,
+    },
+    // Option 2: Pay $0.10 in USDC
     {
       scheme: "exact" as const,
       price: "$0.10",
       network: networkCaip2,
       payTo,
     },
-    // Option 2: Pay $0.08 in fxUSD (20% off — preferred for agents)
-    {
-      scheme: "exact" as const,
-      network: networkCaip2,
-      payTo,
-      price: {
-        amount: "80000000000000000",  // 0.08 fxUSD (18 decimals)
-        asset: "0x55380fe7A1910dFf29A47B622057ab4139DA42C5",
-        extra: {
-          eip712: {
-            name: "FxUSD",
-            version: "2",
-          },
-        },
-      },
-    },
   ]
   : [];
 
-// Create the x402 resource server
+// Create the x402 resource server with fxUSD custom money parser
+const fxusdScheme = new ExactEvmScheme();
+// Register fxUSD parser: when amount matches $0.08, convert to fxUSD token
+fxusdScheme.registerMoneyParser(async (amount: number, _network) => {
+  if (Math.abs(amount - FXUSD_PRICE) < 0.0001) {
+    const atomicAmount = BigInt(Math.round(amount * 10 ** FXUSD_DECIMALS)).toString();
+    return {
+      amount: atomicAmount,
+      asset: FXUSD_ADDRESS,
+      extra: { eip712: { name: "FxUSD", version: "2" } },
+    };
+  }
+  return null; // fall through to default USDC parser
+});
+
 const facilitatorClient = facilitatorUrl
   ? new HTTPFacilitatorClient({ url: facilitatorUrl })
   : null;
 
 const resourceServer = facilitatorClient
   ? new x402ResourceServer(facilitatorClient)
-    .register(networkCaip2, new ExactEvmScheme())
+    .register(networkCaip2, fxusdScheme)
   : null;
 
 const configuredProxy =
