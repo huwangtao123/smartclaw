@@ -600,7 +600,6 @@ export async function proxy(request: NextRequest) {
   }
 
   if (
-    paymentAccepted &&
     request.nextUrl.pathname.startsWith("/api/premium") &&
     response.status >= 200 &&
     response.status < 300 &&
@@ -609,6 +608,11 @@ export async function proxy(request: NextRequest) {
     try {
       const body = (await response.clone().text()).trim();
       if (body.length === 0 || body === "{}") {
+        if (!paymentAccepted) {
+          console.info(
+            "[middleware] Empty JSON ack on /api/premium without parsed payment header; falling through to route handler.",
+          );
+        }
         const passthrough = NextResponse.next();
         for (const cookie of response.cookies.getAll()) {
           passthrough.cookies.set(cookie);
