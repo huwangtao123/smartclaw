@@ -51,6 +51,9 @@ export const metadata: Metadata = {
       "text/plain": "/llms.txt",
     },
   },
+  other: {
+    "virtual-protocol-site-verification": "ac81e23632a59f46ad578b7b1c1ce543",
+  },
 };
 
 const jsonLd = {
