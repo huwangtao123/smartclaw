@@ -246,6 +246,20 @@ data = response.json()
 
 Use this flow for any automated agent integration with `GET /api/premium`.
 
+### Non-Bypass Rule (Critical)
+
+For Smartclaw premium x402, agents must use a standard local EVM signer flow.
+Do **not** use Bankr/BNKR execution paths for this endpoint:
+
+- Do not use `bankr prompt` to execute the payment flow
+- Do not use `bankr sign` for EIP-3009 in this flow
+- Do not switch to Bankr skills as an optimization
+
+If an agent starts on a Bankr path, stop and switch immediately to local signer execution.
+
+Reason: Bankr currently has a known EIP-3009 signing compatibility bug for this flow:
+`https://github.com/BankrBot/skills/issues/199`
+
 ### Fixed Payment Parameters
 
 - **Network**: Base (`eip155:8453`)
@@ -288,7 +302,7 @@ For Smartclaw premium x402, use a standard local EVM signer for EIP-3009.
 ### Tier 2 (Optional): External Signer Adapter
 
 External signers may be used only if signatures are accepted on-chain for fxUSD EIP-3009.
-Do **not** use BNKR signing for this payment flow unless compatibility is explicitly confirmed.
+Do **not** use BNKR/Bankr signing for `/api/premium` unless this repository explicitly marks the compatibility issue as fixed.
 
 If payment fails with `simulation_failed` or `FiatTokenV2: invalid signature`, immediately fallback to Tier 1.
 
