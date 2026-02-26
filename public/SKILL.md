@@ -283,10 +283,12 @@ For each request attempt, log:
 ### Tier 1 (Default): Local EVM Signer
 
 Use a local signer (`viem` + private key) as the default for reliability.
+For Smartclaw premium x402, use a standard local EVM signer for EIP-3009.
 
 ### Tier 2 (Optional): External Signer Adapter
 
 External signers may be used only if signatures are accepted on-chain for fxUSD EIP-3009.
+Do **not** use BNKR signing for this payment flow unless compatibility is explicitly confirmed.
 
 If payment fails with `simulation_failed` or `FiatTokenV2: invalid signature`, immediately fallback to Tier 1.
 
