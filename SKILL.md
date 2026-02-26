@@ -179,17 +179,37 @@ Returns full top-10 traders by PNL and ROI.
 
 ## x402 Payment (Premium Access)
 
-Premium endpoints return `402 Payment Required`. The agent needs a Base wallet with fxUSD.
+Premium endpoints return `402 Payment Required`.
+
+**⚠️ IMPORTANT: Do NOT directly transfer fxUSD to any address. x402 uses a signature-based authorization flow — not direct transfers.**
+
+### How x402 Works
+
+x402 uses **EIP-3009 `transferWithAuthorization`** — a gasless, signature-based payment protocol:
+
+1. Agent calls the premium endpoint → server returns `402` with payment details
+2. Agent **signs** an EIP-3009 authorization (containing from, to, value, validAfter, validBefore, nonce) using its private key
+3. Agent sends the **signed authorization** back in the `X-PAYMENT` header
+4. Server verifies the signature and executes `transferWithAuthorization` on-chain
+5. Server returns the premium data
+
+**The agent never sends a transaction itself. It only signs an authorization. The server handles the on-chain transfer.**
 
 ### x402-fetch (recommended)
+
+The `x402-fetch` library handles the entire flow automatically — 402 detection, EIP-3009 signing, and header attachment.
 
 ```javascript
 import { wrapFetch } from "x402-fetch"; // npm install x402-fetch
 
 const payingFetch = wrapFetch(fetch, {
-  privateKey: "0x...", // EVM private key with fxUSD on Base
+  privateKey: "0x...", // EVM private key with fxUSD balance on Base
 });
 
+// x402-fetch automatically:
+// 1. Detects 402 response
+// 2. Signs EIP-3009 transferWithAuthorization
+// 3. Retries with X-PAYMENT header
 const res = await payingFetch("https://smartclaw.xyz/api/premium");
 const data = await res.json();
 ```
@@ -199,6 +219,7 @@ const data = await res.json();
 ```python
 from x402 import x402_requests  # pip install x402
 
+# Handles 402 → EIP-3009 sign → retry automatically
 response = x402_requests.get(
     "https://smartclaw.xyz/api/premium",
     private_key="0x..."
@@ -206,9 +227,20 @@ response = x402_requests.get(
 data = response.json()
 ```
 
-### Cost
+### Common Mistakes
 
-**$0.01 fxUSD** per call on Base network.
+| ❌ Wrong                                    | ✅ Correct                                            |
+| ------------------------------------------ | ---------------------------------------------------- |
+| Direct `transfer()` of fxUSD to the wallet | Use `x402-fetch` or `x402-python` to sign and pay    |
+| Sending a raw on-chain transaction         | Sign an EIP-3009 authorization (off-chain signature) |
+| Manually constructing payment headers      | Let the x402 client library handle the full flow     |
+
+### fxUSD Token Details
+
+- **Token**: fxUSD on Base network
+- **Contract**: `0x55380fe7A1910dFf29A47B622057ab4139DA42C5`
+- **Decimals**: 18
+- **Cost**: **$0.01 fxUSD** per premium API call
 
 ## URL Pattern
 
