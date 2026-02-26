@@ -399,6 +399,7 @@ export async function proxy(request: NextRequest) {
   }
 
   let response: NextResponse;
+  let paymentAccepted = false;
   try {
     response = await configuredProxy(request);
   } catch (error) {
@@ -460,6 +461,10 @@ export async function proxy(request: NextRequest) {
       console.info("[middleware] original accepts", payload?.accepts);
       const updated = {
         ...payload,
+        resource: {
+          ...payload?.resource,
+          url: computedResource,
+        },
         accepts: Array.isArray(payload?.accepts)
           ? payload.accepts.map((item: Record<string, unknown>) =>
             item && typeof item === "object"
@@ -474,6 +479,21 @@ export async function proxy(request: NextRequest) {
 
       const headers = new Headers(response.headers);
       headers.set("content-type", "application/json");
+
+      // Also rewrite the base64-encoded payment-required header
+      const prHeader = headers.get("payment-required");
+      if (prHeader) {
+        try {
+          const prPayload = JSON.parse(atob(prHeader));
+          if (prPayload?.resource) {
+            prPayload.resource.url = computedResource;
+          }
+          headers.set("payment-required", btoa(JSON.stringify(prPayload)));
+        } catch (e) {
+          console.warn("[middleware] Failed to rewrite payment-required header", e);
+        }
+      }
+
       console.info("[middleware] rewritten resource", computedResource);
       response = new NextResponse(JSON.stringify(updated), {
         status: response.status,
@@ -526,6 +546,7 @@ export async function proxy(request: NextRequest) {
         expiresAt?: string;
       };
       if (paymentResponse?.success) {
+        paymentAccepted = true;
         const expiresAt = new Date(Date.now() + premiumAccessDurationMs);
         const cookieValue = await createPremiumAccessCookie(expiresAt);
         if (cookieValue) {
@@ -575,6 +596,27 @@ export async function proxy(request: NextRequest) {
       console.info(
         `[premium-access] Cleared premium access cookie (${clearReason}).`,
       );
+    }
+  }
+
+  if (
+    paymentAccepted &&
+    request.nextUrl.pathname.startsWith("/api/premium") &&
+    response.status >= 200 &&
+    response.status < 300 &&
+    response.headers.get("content-type")?.includes("application/json")
+  ) {
+    try {
+      const body = (await response.clone().text()).trim();
+      if (body.length === 0 || body === "{}") {
+        const passthrough = NextResponse.next();
+        for (const cookie of response.cookies.getAll()) {
+          passthrough.cookies.set(cookie);
+        }
+        return passthrough;
+      }
+    } catch (error) {
+      console.warn("[middleware] Unable to inspect payment ack payload", error);
     }
   }
 
