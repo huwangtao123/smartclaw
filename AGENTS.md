@@ -35,3 +35,39 @@ This project exposes a set of APIs for **cross-protocol smart wallet tracking**.
 - Public endpoints are safe to call automatically (`x-openai-isConsequential: false`).
 - Premium endpoints require x402 fxUSD payment — only call with explicit user consent.
 - When modifying API endpoints, update the discovery files to stay in sync.
+
+## x402 Premium Hard Rules
+
+These rules are mandatory for any agent calling `GET /api/premium`.
+
+### Execution Rules
+
+1. Always call the endpoint first and parse `402 payment-required` details.
+2. Never send a direct token transfer to unlock premium access.
+3. Use EIP-3009 signing via an x402 client flow.
+4. Retry the same endpoint with payment headers.
+5. If response is `200` with `{}` (or empty body), retry once with latest cookie/headers.
+6. Mark success only when response includes:
+   - `x402Version`
+   - `protocol`
+   - `topByPnl`
+   - `topByRoi`
+   - `generatedAt`
+
+### Wallet and Signer Rules
+
+- If no wallet exists, ask for explicit user confirmation before generating one, then provide the public funding address and continue.
+- Default signer: local EVM signer (`viem` + private key).
+- If an external signer returns invalid EIP-3009 behavior (`simulation_failed`, `invalid signature`), fallback to local signer.
+- Never print private key contents in logs, stdout, or chat.
+
+### Required Debug Fields
+
+For every premium payment attempt, include:
+
+- HTTP status
+- `content-type`
+- `set-cookie`
+- `payment-required`
+- `payment-response` / `x-payment-response`
+- response body
