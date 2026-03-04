@@ -50,4 +50,4 @@ Premium endpoints use the x402 protocol ($0.01 fxUSD per call on Base network).
 
 ## Contact
 
-For API issues or partnerships, open an issue at: https://github.com/huwangtao123/aicharts
+For API issues or partnerships, open an issue at: https://github.com/huwangtao123/smartclaw

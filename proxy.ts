@@ -11,7 +11,7 @@ const rawNetwork = process.env.X402_NETWORK ?? "base";
 const facilitatorEnv = process.env.NEXT_PUBLIC_FACILITATOR_URL;
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
 const premiumAccessSecret = process.env.PREMIUM_ACCESS_SECRET;
-const premiumAccessCookieName = "aicharts-premium-access";
+const premiumAccessCookieName = "smartclaw-premium-access";
 const defaultPremiumAccessDurationHours = 72;
 const rawPremiumAccessDuration =
   process.env.PREMIUM_ACCESS_DURATION_HOURS ?? "";

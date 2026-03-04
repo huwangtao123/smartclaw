@@ -63,7 +63,7 @@ You can set up a cron job to run the data preparation script every day at midnig
    ```
 2. Add the following line (adjust path to your project):
    ```bash
-   0 0 * * * cd /path/to/aicharts && npm run prepare-data
+   0 0 * * * cd /path/to/smartclaw && npm run prepare-data
    ```
 
 ### Using GitHub Actions

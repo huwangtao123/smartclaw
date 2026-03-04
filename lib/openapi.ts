@@ -312,7 +312,7 @@ const components: Components = {
     PremiumAccessCookie: {
       type: "apiKey",
       in: "cookie",
-      name: "aicharts-premium-access",
+      name: "smartclaw-premium-access",
       description:
         "Session cookie granted after a successful x402 checkout. Required for premium endpoints.",
     },
