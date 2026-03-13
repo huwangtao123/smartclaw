@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write",
-    "prepare-data": "python scripts/generate_lending_protocol_rates.py && python scripts/generate_fxUSD_rates.py --reference lending_rates.csv --output lending_rates.csv",
+    "prepare-data": "python scripts/generate_solana_data.py && python scripts/generate_lending_protocol_rates.py && python scripts/generate_fxUSD_rates.py --reference lending_rates.csv --output lending_rates.csv",
     "build-with-data": "npm run prepare-data && npm run build",
     "test": "node --experimental-strip-types --experimental-transform-types --test lib/*.test.ts"
   },
@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
+    "@next/swc-darwin-arm64": "^16.1.6",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "19.2.14",

@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
 
-import { _internal } from "./rates.ts";
+import { _internal } from "./rates";
 
 describe("rates helpers", () => {
   it("merges series and computes moving average", () => {

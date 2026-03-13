@@ -1,91 +1,99 @@
 {
-  "name": "smartclaw",
-  "description": "Cross-protocol smart wallet tracking API. Aggregates PNL, ROI, and capital flow signals across protocol leaderboards. f(x) Protocol is the first integrated source, with Perp DEX and Meme Coin integrations coming soon.",
+  "name": "smartclaw-solana",
+  "description": "Agent Intelligence Layer for discovering, ranking, and explaining smart money activity on Solana. Connects agents to high-signal token flows, conviction rankings, and risk tags without acting as an execution endpoint.",
   "url": "/api/openapi",
   "version": "2.0.0",
   "capabilities": [
     {
-      "id": "getTopPnl",
-      "description": "Get highest PNL wallets aggregated across all integrated protocols. Use to identify top-performing wallets globally.",
+      "id": "getSolanaOverview",
+      "description": "Get current Solana network monitoring scale, active wallets, token coverage, and latest rotation shifts.",
       "method": "GET",
-      "path": "/api/top-pnl",
+      "path": "/api/solana/overview",
+      "auth": "none"
+    },
+    {
+      "id": "getSolanaSmartMoney",
+      "description": "Get high-priority ranked smart money wallets, signal strength, and recent behavior summaries on Solana.",
+      "method": "GET",
+      "path": "/api/solana/smart-money",
       "auth": "none",
       "parameters": [
         {
           "name": "limit",
           "type": "integer",
           "required": false,
-          "description": "Max wallets to return (1-100, default 10)"
+          "description": "Max wallets to return"
+        }
+      ]
+    },
+    {
+      "id": "getSolanaTokenFlow",
+      "description": "Get smart money capital flow, participating addresses, and trend changes for a specific Solana token.",
+      "method": "GET",
+      "path": "/api/solana/token-flow",
+      "auth": "none",
+      "parameters": [
+        {
+          "name": "symbolOrMint",
+          "type": "string",
+          "required": false,
+          "description": "Token symbol or mint address"
+        }
+      ]
+    },
+    {
+      "id": "getSolanaWatchlist",
+      "description": "Get an agent-ready watchlist of Solana tokens/wallets with conviction explanations, risk tags, and freshness.",
+      "method": "GET",
+      "path": "/api/solana/watchlist",
+      "auth": "none",
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "required": false,
+          "description": "Max watchlist items to return"
+        }
+      ]
+    },
+    {
+      "id": "getSolanaExplain",
+      "description": "Get a structured explanation of conviction or behavior for a specific Solana wallet, token, or narrative.",
+      "method": "GET",
+      "path": "/api/solana/explain",
+      "auth": "none",
+      "parameters": [
+        {
+          "name": "subject",
+          "type": "string",
+          "required": false,
+          "description": "Entity type (wallet, token, narrative)"
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "Entity identifier"
         }
       ]
     },
     {
       "id": "getFxTopPnl",
-      "description": "Get highest PNL wallets from the f(x) Protocol leaderboard. Use to identify top-performing traders within f(x).",
+      "description": "Get highest PNL wallets from the f(x) Protocol leaderboard (Legacy).",
       "method": "GET",
       "path": "/api/fx/top-pnl",
-      "auth": "none",
-      "parameters": [
-        {
-          "name": "limit",
-          "type": "integer",
-          "required": false,
-          "description": "Max wallets to return (1-100, default 10)"
-        }
-      ]
-    },
-    {
-      "id": "getFxStatus",
-      "description": "Get f(x) Protocol status overview: tracked wallets, winners, win rates, volume, PNL, and momentum.",
-      "method": "GET",
-      "path": "/api/fx/status",
       "auth": "none"
     },
     {
       "id": "getFxFxusdRate",
-      "description": "Get latest and historical fxUSD borrow APR from f(x) Protocol. Use to check current borrow cost.",
+      "description": "Get fxUSD borrow APR from f(x) Protocol (Legacy).",
       "method": "GET",
       "path": "/api/fx/fxusd-rate",
-      "auth": "none",
-      "parameters": [
-        {
-          "name": "maWindow",
-          "type": "integer",
-          "required": false,
-          "description": "Moving average window in days (default 30)"
-        },
-        {
-          "name": "limit",
-          "type": "integer",
-          "required": false,
-          "description": "Number of historical data points to return"
-        }
-      ]
-    },
-    {
-      "id": "getRates",
-      "description": "Get full lending rate data across Aave, CrvUSD, and fxUSD. Use to compare DeFi borrow rates.",
-      "method": "GET",
-      "path": "/api/rates",
-      "auth": "none",
-      "parameters": [
-        {
-          "name": "maWindow",
-          "type": "integer",
-          "required": false,
-          "description": "Moving average window in days"
-        },
-        {
-          "name": "fallback",
-          "type": "string",
-          "required": false,
-          "description": "Fallback CSV file path"
-        }
-      ]
+      "auth": "none"
     },
     {
       "id": "getPremiumMetrics",
-      "description": "Get premium leaderboard metrics with top traders by PNL and ROI. Requires x402 fxUSD payment.",
+      "description": "Get premium leaderboard metrics. Requires x402 fxUSD payment.",
       "method": "GET",
       "path": "/api/premium",
       "auth": "x402_cookie"
@@ -97,7 +105,7 @@
     },
     "x402_cookie": {
       "description": "Pay $0.01 fxUSD per call via x402 protocol on Base network.",
-      "flow": "Access premium endpoints; the x402 paywall handles wallet connection and payment automatically."
+      "flow": "Access premium legacy endpoints; the x402 paywall handles wallet connection and payment automatically."
     }
   }
 }

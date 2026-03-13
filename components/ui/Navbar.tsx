@@ -32,8 +32,8 @@ export function Navbar({
                             priority
                         />
                     </div>
-                    <span className="font-mono text-sm font-medium text-neon-400">
-                        smartclaw
+                    <span className="font-mono text-sm font-medium text-[#00FFA3]">
+                        smartclaw solana
                     </span>
                 </Link>
 
@@ -41,27 +41,42 @@ export function Navbar({
                 <div className="hidden sm:flex items-center gap-1">
                     <Link
                         href="/"
-                        className="rounded-lg px-3.5 py-1.5 text-xs font-medium text-white/60 transition hover:text-white hover:bg-white/[0.04]"
+                        className="rounded-lg px-3.5 py-1.5 text-xs font-medium text-white/60 transition hover:text-[#00FFA3] hover:bg-[#00FFA3]/[0.08]"
                     >
-                        {isZh ? "f(x) 协议" : "f(x) Protocol"}
-                    </Link>
-                    <Link
-                        href="/fxmint"
-                        className="rounded-lg px-3.5 py-1.5 text-xs font-medium text-white/60 transition hover:text-white hover:bg-white/[0.04]"
-                    >
-                        {isZh ? "利率" : "Rates"}
+                        Demo
                     </Link>
                     <Link
                         href="/docs"
-                        className="rounded-lg px-3.5 py-1.5 text-xs font-medium text-white/60 transition hover:text-white hover:bg-white/[0.04]"
+                        className="rounded-lg px-3.5 py-1.5 text-xs font-medium text-white/60 transition hover:text-[#00FFA3] hover:bg-[#00FFA3]/[0.08]"
                     >
                         {isZh ? "文档" : "Docs"}
                     </Link>
-                    <Link
-                        href="/premium"
-                        className="rounded-lg px-3.5 py-1.5 text-xs font-medium text-neon-400/80 transition hover:text-neon-300 hover:bg-neon-500/[0.06]"
+                    <a
+                        href="/SKILL.md"
+                        target="_blank"
+                        className="rounded-lg px-3.5 py-1.5 text-xs font-medium text-white/60 transition hover:text-[#00FFA3] hover:bg-[#00FFA3]/[0.08]"
                     >
-                        Premium
+                        SKILL
+                    </a>
+                    <a
+                        href="/api/openapi"
+                        target="_blank"
+                        className="rounded-lg px-3.5 py-1.5 text-xs font-medium text-white/60 transition hover:text-[#00FFA3] hover:bg-[#00FFA3]/[0.08]"
+                    >
+                        API
+                    </a>
+                    <a
+                        href="#"
+                        className="rounded-lg px-3.5 py-1.5 text-xs font-medium opacity-50 cursor-not-allowed text-white/40 transition"
+                        title="Coming Soon"
+                    >
+                        X Article
+                    </a>
+                    <Link
+                        href="/fx"
+                        className="ml-2 rounded-lg px-3.5 py-1.5 text-xs font-medium text-white/30 transition hover:text-white hover:bg-white/[0.04] border border-white/10"
+                    >
+                        Legacy
                     </Link>
                 </div>
 
@@ -76,7 +91,7 @@ export function Navbar({
                                 type="button"
                                 onClick={() => onLanguageChange(code)}
                                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${isActive
-                                    ? "bg-neon-500 text-black"
+                                    ? "bg-[#00FFA3] text-black"
                                     : "text-white/40 hover:text-white/70"
                                     }`}
                             >

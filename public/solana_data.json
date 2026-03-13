@@ -1,0 +1,124 @@
+{
+  "overview": {
+    "network": "solana",
+    "trackedWallets": 800,
+    "activeCoverageTokens": 4,
+    "totalVolume24h": 641852.23,
+    "latestRotationShift": "Focus shifting towards SOL & SOL ecosystems.",
+    "lastUpdated": "2026-03-13T00:07:48.636900Z"
+  },
+  "watchlist": [
+    {
+      "type": "token",
+      "target": "SOL",
+      "mint": "sosd5Q3DutGxMEaukBDmkPgsapMQz59jNjGWmhYcdTQ",
+      "reason": "Real-time volume surge ($464,854 24h) and 0.72% drop.",
+      "risk": "Medium",
+      "freshness": "Updated <1h ago",
+      "vol24h": 464853.66,
+      "trend": "Decreasing"
+    },
+    {
+      "type": "token",
+      "target": "SOL",
+      "mint": "jk1T35eWK41MBMM8AWoYVaNbjHEEQzMDetTsfnqpump",
+      "reason": "Real-time volume surge ($96,504 24h) and 4.05% gain.",
+      "risk": "High Volatility",
+      "freshness": "Updated <1h ago",
+      "vol24h": 96504.09,
+      "trend": "Increasing"
+    },
+    {
+      "type": "token",
+      "target": "SOL",
+      "mint": "sokhCSmzutMPPuNcxG1j6gYLowgiM8mswjJu8FBYm5r",
+      "reason": "Real-time volume surge ($80,411 24h) and 0.61% drop.",
+      "risk": "High Volatility",
+      "freshness": "Updated <1h ago",
+      "vol24h": 80410.61,
+      "trend": "Decreasing"
+    },
+    {
+      "type": "token",
+      "target": "SOL",
+      "mint": "DRLNhjM7jusYFPF1qade1dBD1qhgds7oAfdKs51Vpump",
+      "reason": "Real-time volume surge ($84 24h) and 0.94% drop.",
+      "risk": "High Volatility",
+      "freshness": "Updated <1h ago",
+      "vol24h": 83.87,
+      "trend": "Decreasing"
+    }
+  ],
+  "smartMoney": [
+    {
+      "address": "SolTrader_SOL_3608",
+      "signalStrength": 92,
+      "recentBehavior": "Heavy position in SOL (Decreasing trend)",
+      "convictionScore": 5.9,
+      "targetMint": "sosd5Q3DutGxMEaukBDmkPgsapMQz59jNjGWmhYcdTQ"
+    },
+    {
+      "address": "SolTrader_SOL_3217",
+      "signalStrength": 89,
+      "recentBehavior": "Heavy position in SOL (Increasing trend)",
+      "convictionScore": 5.2,
+      "targetMint": "jk1T35eWK41MBMM8AWoYVaNbjHEEQzMDetTsfnqpump"
+    },
+    {
+      "address": "SolTrader_SOL_3238",
+      "signalStrength": 84,
+      "recentBehavior": "Heavy position in SOL (Decreasing trend)",
+      "convictionScore": 5.2,
+      "targetMint": "sokhCSmzutMPPuNcxG1j6gYLowgiM8mswjJu8FBYm5r"
+    },
+    {
+      "address": "SolTrader_SOL_2213",
+      "signalStrength": 80,
+      "recentBehavior": "Heavy position in SOL (Decreasing trend)",
+      "convictionScore": 5.0,
+      "targetMint": "DRLNhjM7jusYFPF1qade1dBD1qhgds7oAfdKs51Vpump"
+    }
+  ],
+  "tokenFlow": [
+    {
+      "type": "token",
+      "target": "SOL",
+      "mint": "sosd5Q3DutGxMEaukBDmkPgsapMQz59jNjGWmhYcdTQ",
+      "reason": "Real-time volume surge ($464,854 24h) and 0.72% drop.",
+      "risk": "Medium",
+      "freshness": "Updated <1h ago",
+      "vol24h": 464853.66,
+      "trend": "Decreasing"
+    },
+    {
+      "type": "token",
+      "target": "SOL",
+      "mint": "jk1T35eWK41MBMM8AWoYVaNbjHEEQzMDetTsfnqpump",
+      "reason": "Real-time volume surge ($96,504 24h) and 4.05% gain.",
+      "risk": "High Volatility",
+      "freshness": "Updated <1h ago",
+      "vol24h": 96504.09,
+      "trend": "Increasing"
+    },
+    {
+      "type": "token",
+      "target": "SOL",
+      "mint": "sokhCSmzutMPPuNcxG1j6gYLowgiM8mswjJu8FBYm5r",
+      "reason": "Real-time volume surge ($80,411 24h) and 0.61% drop.",
+      "risk": "High Volatility",
+      "freshness": "Updated <1h ago",
+      "vol24h": 80410.61,
+      "trend": "Decreasing"
+    },
+    {
+      "type": "token",
+      "target": "SOL",
+      "mint": "DRLNhjM7jusYFPF1qade1dBD1qhgds7oAfdKs51Vpump",
+      "reason": "Real-time volume surge ($84 24h) and 0.94% drop.",
+      "risk": "High Volatility",
+      "freshness": "Updated <1h ago",
+      "vol24h": 83.87,
+      "trend": "Decreasing"
+    }
+  ]
+}

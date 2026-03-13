@@ -320,6 +320,91 @@ const components: Components = {
 };
 
 const endpointDefinitions: EndpointDefinition[] = [
+  /* ── Solana Intelligence ── */
+  {
+    path: "/api/solana/overview",
+    method: "get",
+    operation: {
+      operationId: "getSolanaOverview",
+      "x-openai-isConsequential": false,
+      tags: ["Solana Smart Money"],
+      summary: "Network status & activity overview",
+      description: "Get current Solana network monitoring scale, active wallets, token coverage, and latest rotation shifts.",
+      responses: {
+        "200": { description: "Network status overview." }
+      }
+    }
+  },
+  {
+    path: "/api/solana/smart-money",
+    method: "get",
+    operation: {
+      operationId: "getSolanaSmartMoney",
+      "x-openai-isConsequential": false,
+      tags: ["Solana Smart Money"],
+      summary: "Ranked conviction wallets",
+      description: "Get high-priority ranked smart money wallets, signal strength, and recent behavior summaries on Solana.",
+      parameters: [{
+        name: "limit", in: "query", description: "Max wallets to return", required: false, schema: { type: "integer", default: 10 }
+      }],
+      responses: {
+        "200": { description: "Ranked wallets list." }
+      }
+    }
+  },
+  {
+    path: "/api/solana/token-flow",
+    method: "get",
+    operation: {
+      operationId: "getSolanaTokenFlow",
+      "x-openai-isConsequential": false,
+      tags: ["Solana Smart Money"],
+      summary: "Token capital flow",
+      description: "Get smart money capital flow, participating addresses, and trend changes for a specific Solana token.",
+      parameters: [{
+        name: "symbolOrMint", in: "query", description: "Token symbol or mint address", required: false, schema: { type: "string" }
+      }],
+      responses: {
+        "200": { description: "Token capital flow data." }
+      }
+    }
+  },
+  {
+    path: "/api/solana/watchlist",
+    method: "get",
+    operation: {
+      operationId: "getSolanaWatchlist",
+      "x-openai-isConsequential": false,
+      tags: ["Solana Smart Money"],
+      summary: "Agent-ready watchlist",
+      description: "Get an agent-ready watchlist of Solana tokens/wallets with conviction explanations, risk tags, and freshness.",
+      parameters: [{
+        name: "limit", in: "query", description: "Max items to return", required: false, schema: { type: "integer", default: 5 }
+      }],
+      responses: {
+        "200": { description: "Agent-ready watchlist." }
+      }
+    }
+  },
+  {
+    path: "/api/solana/explain",
+    method: "get",
+    operation: {
+      operationId: "getSolanaExplain",
+      "x-openai-isConsequential": false,
+      tags: ["Solana Smart Money"],
+      summary: "Behavior explanation",
+      description: "Get a structured explanation of conviction or behavior for a specific Solana wallet, token, or narrative.",
+      parameters: [
+        { name: "subject", in: "query", description: "Entity type (wallet, token, narrative)", required: false, schema: { type: "string" } },
+        { name: "id", in: "query", description: "Entity identifier", required: false, schema: { type: "string" } }
+      ],
+      responses: {
+        "200": { description: "Contextual explanation." }
+      }
+    }
+  },
+
   /* ── Global Aggregate ── */
   {
     path: "/api/top-pnl",
@@ -655,10 +740,10 @@ export function buildOpenApiDocument() {
   return {
     openapi: "3.1.0",
     info: {
-      title: "Smartclaw API",
+      title: "Smartclaw Solana",
       version: "2.0.0",
       description:
-        "Cross-protocol smart wallet tracking API. Aggregate PNL, ROI, and capital flow signals across protocol leaderboards. f(x) Protocol is the first integrated source, with Perp DEX and Meme Coin integrations coming soon.",
+        "Agent Intelligence Layer for discovering, ranking, and explaining smart money activity on Solana. Connects agents to high-signal token flows, conviction rankings, and risk tags without acting as an execution endpoint.",
     },
     externalDocs: {
       description: "AI-friendly summary of available capabilities",
@@ -666,6 +751,10 @@ export function buildOpenApiDocument() {
     },
     servers: buildServers(),
     tags: [
+      {
+        name: "Solana Smart Money",
+        description: "Agent-ready intelligence layer: wallet ranks, conviction explanations, and token flows.",
+      },
       {
         name: "Global",
         description:

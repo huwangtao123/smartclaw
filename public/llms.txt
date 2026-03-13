@@ -1,52 +1,45 @@
-# Smartclaw
+# Smartclaw Solana
 
-> Cross-protocol smart wallet tracking API for AI agents and DeFi traders.
+> Agent-ready intelligence layer for discovering, ranking, and explaining smart money activity on Solana.
 
 ## About
 
-Smartclaw aggregates PNL, ROI, and capital flow signals from protocol leaderboards.
-Currently tracking 1,700+ wallets on f(x) Protocol, with Perp DEX and Meme Coin protocols coming soon.
+Smartclaw Solana compresses noisy on-chain behaviors into high-signal inputs that AI agents can directly consume. It ranks conviction, tracks token flow, and provides structural explanations for wallet behaviors. Smartclaw Solana does *not* execute trades.
 
 ## Allowed URLs
 
 - https://smartclaw.xyz/
-- https://smartclaw.xyz/premium
-- https://smartclaw.xyz/docs
-- https://smartclaw.xyz/fxmint
+- https://smartclaw.xyz/solana
 - https://smartclaw.xyz/api/openapi
 - https://smartclaw.xyz/SKILL.md
 - https://smartclaw.xyz/agents.json
-- https://smartclaw.xyz/feed.xml
 
-## API Endpoints
+## Primary Solana API Endpoints
 
-- GET /api/top-pnl — Global top PNL wallets across all protocols
+- GET /api/solana/overview — Network monitoring scale, active wallets, and rotation shifts
+- GET /api/solana/smart-money — Ranked conviction wallets and signal strength
+- GET /api/solana/token-flow — Capital flows and participant data for tokens
+- GET /api/solana/watchlist — Agent-ready watchlist with explanations and risk ratings
+- GET /api/solana/explain — Agent-friendly rationales for tracking a wallet or token
+
+## Legacy APIs (Ethereum/Base)
+
 - GET /api/fx/status — f(x) Protocol health snapshot
-- GET /api/fx/top-pnl — f(x) Protocol top PNL wallets
+- GET /api/fx/top-pnl — f(x) Protocol top PNL wallets 
 - GET /api/fx/fxusd-rate — fxUSD borrow rate (latest + historical)
-- GET /api/rates — Cross-protocol lending rate comparison (Aave, CrvUSD, fxUSD)
-- GET /api/premium — Premium leaderboard metrics (x402 payment, $0.01 fxUSD)
+- GET /api/premium — Premium metrics (x402 payment, $0.01 fxUSD)
 
 ## Authentication
 
-Public endpoints require no authentication.
-Premium endpoints use the x402 protocol ($0.01 fxUSD per call on Base network).
+Public endpoints require no authentication, making them agent-friendly.
+Premium legacy endpoints use the x402 protocol on Base network.
 
 ## Machine-Readable Specs
 
 - OpenAPI 3.1: https://smartclaw.xyz/api/openapi
 - Agent descriptor: https://smartclaw.xyz/agents.json
 - Plugin manifest: https://smartclaw.xyz/.well-known/ai-plugin.json
-- RSS feed: https://smartclaw.xyz/feed.xml
 - SKILL.md: https://smartclaw.xyz/SKILL.md
-
-## Policy
-
-- All public endpoints are free to call without rate limits.
-- Premium data costs $0.01 fxUSD per request.
-- Data is sourced from on-chain snapshots and protocol APIs.
-- No personal data is collected or stored.
-- AI agents are welcome to index and use this data.
 
 ## Contact
 
