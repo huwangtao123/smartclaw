@@ -1,3 +1,5 @@
+import type { FxActivitySnapshot } from "@/lib/fxActivity";
+
 export type Trader = {
   rank: number;
   trader: string;
@@ -23,5 +25,10 @@ export type DashboardMetrics = {
   avgRoi: number;
   topByPnl: Trader[];
   topByRoi: Trader[];
+  topByVolume: Trader[];
   hasMajorityMomentum: boolean;
+};
+
+export type DashboardActivityData = {
+  activitySnapshot: FxActivitySnapshot | null;
 };

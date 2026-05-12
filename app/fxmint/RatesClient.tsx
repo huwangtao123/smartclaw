@@ -7,11 +7,9 @@ import {
   InterestRateChart,
   RANGE_OPTIONS,
 } from "@/app/components/InterestRateChart";
-import type { RateSeries } from "@/lib/rates";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { GlowingStat } from "@/components/ui/GlowingStat";
 import { Navbar } from "@/components/ui/Navbar";
-import { NeonProgress } from "@/components/ui/NeonProgress";
+import type { RateSeries } from "@/lib/rates";
 
 type Language = "en" | "zh";
 type Collateral = "WBTC" | "wstETH";
@@ -284,7 +282,7 @@ export function RatesClient({ data }: { data: RateSeries }) {
         parts: primaryParts,
       };
     });
-  }, [data.maWindow, filteredSeries, hasData]);
+  }, [filteredSeries, hasData]);
 
   const rangeLabel = useMemo(() => {
     const option = RANGE_OPTIONS.find((opt) => opt.id === rangeId);
@@ -299,11 +297,7 @@ export function RatesClient({ data }: { data: RateSeries }) {
       {/* Background Glow */}
       <div className="fixed top-[-200px] left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-neon-500/[0.04] blur-[150px] rounded-full pointer-events-none" />
 
-      <Navbar
-        language={language}
-        onLanguageChange={setLanguage}
-        isZh={isZh}
-      />
+      <Navbar language={language} onLanguageChange={setLanguage} isZh={isZh} />
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 pt-14 pb-20 relative z-10">
         <div className="flex items-center gap-3 text-[10px] uppercase tracking-widest text-white/30 animate-enter delay-100">
@@ -415,10 +409,11 @@ export function RatesClient({ data }: { data: RateSeries }) {
                     key={preset.label}
                     type="button"
                     onClick={() => setDays(preset.value)}
-                    className={`rounded-full border px-3 py-1 ${days === preset.value
+                    className={`rounded-full border px-3 py-1 ${
+                      days === preset.value
                         ? "border-emerald-300 bg-emerald-400/20 text-emerald-50"
                         : "border-emerald-300/30 text-emerald-100/70 hover:border-emerald-200/60 hover:text-emerald-50"
-                      }`}
+                    }`}
                   >
                     {preset.label}
                   </button>
@@ -496,10 +491,11 @@ export function RatesClient({ data }: { data: RateSeries }) {
                           key={asset}
                           type="button"
                           onClick={() => setCollateral(asset)}
-                          className={`w-full rounded-lg border px-3 py-3 text-left transition ${isActive
+                          className={`w-full rounded-lg border px-3 py-3 text-left transition ${
+                            isActive
                               ? "border-emerald-400/70 bg-slate-950/70"
                               : "border-slate-800 bg-slate-950/40 hover:border-emerald-300/40"
-                            }`}
+                          }`}
                         >
                           <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-slate-400">
                             <span>{asset}</span>
@@ -751,10 +747,11 @@ export function RatesClient({ data }: { data: RateSeries }) {
                             {row.parts.map((part) => (
                               <span
                                 key={`${row.date}-${part.label}`}
-                                className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${part.highlight
+                                className={`rounded-full px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                                  part.highlight
                                     ? "bg-neon-500/10 text-neon-300 border border-neon-500/20"
                                     : "bg-white/5 text-slate-500 border border-white/5"
-                                  }`}
+                                }`}
                               >
                                 {part.label}: {part.value}
                               </span>

@@ -41,8 +41,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Smartclaw",
-    description:
-      "Cross-protocol smart wallet tracking API for AI agents.",
+    description: "Cross-protocol smart wallet tracking API for AI agents.",
     images: ["/og_1200x630.png"],
   },
   alternates: {
@@ -119,7 +118,7 @@ const jsonLd = {
           name: "How much does Smartclaw cost?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Most endpoints are free and require no authentication. Premium endpoints cost $0.01 fxUSD per call on Base network using the x402 payment protocol.",
+            text: "All listed endpoints are free and require no authentication.",
           },
         },
         {
@@ -143,10 +142,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
         <link
           rel="alternate"
           type="application/rss+xml"
@@ -162,4 +158,3 @@ export default function RootLayout({
     </html>
   );
 }
-

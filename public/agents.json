@@ -74,30 +74,20 @@
           "type": "integer",
           "required": false,
           "description": "Moving average window in days"
-        },
-        {
-          "name": "fallback",
-          "type": "string",
-          "required": false,
-          "description": "Fallback CSV file path"
         }
       ]
     },
     {
       "id": "getPremiumMetrics",
-      "description": "Get premium leaderboard metrics with top traders by PNL and ROI. Requires x402 fxUSD payment.",
+      "description": "Get public leaderboard metrics with top traders by PNL and ROI.",
       "method": "GET",
       "path": "/api/premium",
-      "auth": "x402_cookie"
+      "auth": "none"
     }
   ],
   "auth_schemes": {
     "none": {
       "description": "No authentication required."
-    },
-    "x402_cookie": {
-      "description": "Pay $0.01 fxUSD per call via x402 protocol on Base network.",
-      "flow": "Access premium endpoints; the x402 paywall handles wallet connection and payment automatically."
     }
   }
 }

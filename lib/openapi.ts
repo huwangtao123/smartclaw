@@ -62,6 +62,12 @@ const traderSchema = {
       description: "Net capital flow.",
       example: 10234.12,
     },
+    protocol: {
+      type: "string",
+      description:
+        "Protocol identifier for aggregate responses. Omitted on protocol-specific endpoints.",
+      example: "fx",
+    },
   },
   required: ["trader", "roi", "pnl", "pnlClean", "vol", "net"],
   additionalProperties: false,
@@ -121,12 +127,6 @@ const components: Components = {
     PremiumMetricsResponse: {
       type: "object",
       properties: {
-        x402Version: {
-          type: "integer",
-          description:
-            "Version of the x402 payment configuration that granted access.",
-          example: 1,
-        },
         protocol: {
           type: "string",
           description: "Protocol identifier for this response.",
@@ -153,13 +153,7 @@ const components: Components = {
           description: "Timestamp when the metrics snapshot was produced.",
         },
       },
-      required: [
-        "x402Version",
-        "protocol",
-        "topByPnl",
-        "topByRoi",
-        "generatedAt",
-      ],
+      required: ["protocol", "topByPnl", "topByRoi", "generatedAt"],
       additionalProperties: false,
     },
     FxUsdRate: {
@@ -233,7 +227,7 @@ const components: Components = {
         error: {
           type: "string",
           description: "Human-readable message describing the error.",
-          example: "Premium access required",
+          example: "Request failed",
         },
         code: {
           type: "string",
@@ -245,50 +239,12 @@ const components: Components = {
           description: "HTTP status attached to the error response.",
           example: 401,
         },
-        upgradeUrl: {
-          type: "string",
-          format: "uri",
-          description: "Link explaining how to unlock premium access.",
-          example: "https://example.com/premium",
-        },
       },
       required: ["error"],
       additionalProperties: true,
     },
   },
   responses: {
-    Unauthorized: {
-      description: "Request lacks valid premium credentials.",
-      content: {
-        "application/json": {
-          schema: {
-            $ref: "#/components/schemas/ErrorResponse",
-          },
-          example: {
-            error: "Premium access required",
-            code: "UNAUTHORIZED",
-            status: 401,
-            upgradeUrl: "https://example.com/premium",
-          },
-        },
-      },
-    },
-    PaymentRequired: {
-      description:
-        "Premium payment is required before the requested resource can be accessed.",
-      content: {
-        "application/json": {
-          schema: {
-            $ref: "#/components/schemas/ErrorResponse",
-          },
-          example: {
-            error: "Premium payment required",
-            status: 402,
-            upgradeUrl: "https://example.com/premium",
-          },
-        },
-      },
-    },
     ServerError: {
       description: "Server error while preparing the dataset.",
       content: {
@@ -303,20 +259,8 @@ const components: Components = {
         },
       },
     },
-    X402Proxy: {
-      description:
-        "Response proxied directly from the upstream x402 payment infrastructure.",
-    },
   },
-  securitySchemes: {
-    PremiumAccessCookie: {
-      type: "apiKey",
-      in: "cookie",
-      name: "smartclaw-premium-access",
-      description:
-        "Session cookie granted after a successful x402 checkout. Required for premium endpoints.",
-    },
-  },
+  securitySchemes: {},
 };
 
 const endpointDefinitions: EndpointDefinition[] = [
@@ -522,19 +466,13 @@ const endpointDefinitions: EndpointDefinition[] = [
     operation: {
       operationId: "getPremiumMetrics",
       "x-openai-isConsequential": false,
-      tags: ["Premium", "f(x) Protocol"],
-      summary: "Premium f(x) Protocol leaderboard metrics",
+      tags: ["f(x) Protocol", "Leaderboard"],
+      summary: "f(x) Protocol leaderboard metrics",
       description:
-        "Returns premium leaderboard insights for f(x) Protocol including top traders by PNL and ROI. Requires x402 payment ($0.01 fxUSD on Base network). Requests without a premium cookie receive a 402 payment required response.",
-      security: [
-        {
-          PremiumAccessCookie: [],
-        },
-      ],
+        "Returns top traders by PNL and ROI for f(x) Protocol. Public endpoint with no payment or authentication required.",
       responses: {
         "200": {
-          description:
-            "Premium f(x) Protocol leaderboard metrics for authenticated users.",
+          description: "Public f(x) Protocol leaderboard metrics.",
           content: {
             "application/json": {
               schema: {
@@ -542,12 +480,6 @@ const endpointDefinitions: EndpointDefinition[] = [
               },
             },
           },
-        },
-        "401": {
-          $ref: "#/components/responses/Unauthorized",
-        },
-        "402": {
-          $ref: "#/components/responses/PaymentRequired",
         },
       },
     },
@@ -573,16 +505,6 @@ const endpointDefinitions: EndpointDefinition[] = [
           schema: {
             type: "integer",
             default: 30,
-          },
-        },
-        {
-          name: "fallback",
-          in: "query",
-          description:
-            "Path to a fallback CSV file when the primary data source is unavailable.",
-          required: false,
-          schema: {
-            type: "string",
           },
         },
       ],
@@ -682,9 +604,9 @@ export function buildOpenApiDocument() {
           "Cross-protocol lending rate comparison (fxUSD, Aave, crvUSD).",
       },
       {
-        name: "Premium",
+        name: "Leaderboard",
         description:
-          "Endpoints gated behind an x402 paywall ($0.01 fxUSD on Base network). Requires explicit user consent before payment.",
+          "Leaderboard analytics endpoints for f(x) Protocol and global wallet rankings.",
       },
       {
         name: "Discovery",

@@ -6,26 +6,25 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
 
-  /* Void Palette — pure black base like nkmc.ai */
-  --color-void-900: #000000;
-  --color-void-800: #0a0a0a;
-  --color-void-700: #111111;
+  /* Deep market-data palette */
+  --color-void-900: #05070b;
+  --color-void-800: #090d14;
+  --color-void-700: #101722;
 
   /* Card Surface */
-  --color-card: #111111;
-  --color-card-hover: #161616;
+  --color-card: #0d121b;
+  --color-card-hover: #121a27;
 
-  /* Neon Palette */
-  --color-neon-300: #86efac;
-  --color-neon-400: #4ade80;
-  --color-neon-500: #00ff9d;
-  --color-neon-900: rgba(0, 255, 157, 0.1);
+  /* Signal Palette */
+  --color-neon-300: #7dd3fc;
+  --color-neon-400: #38bdf8;
+  --color-neon-500: #00e5a8;
+  --color-neon-900: rgba(0, 229, 168, 0.1);
+  --color-amber-signal: #f59e0b;
+  --color-blue-signal: #2563eb;
 
   /* Glass Utils */
-  --color-glass-stroke: rgba(255, 255, 255, 0.08);
-
-  /* Atmospheric blue glow — nkmc.ai edge effect */
-  --color-glow-blue: rgba(59, 130, 246, 0.15);
+  --color-glass-stroke: rgba(148, 163, 184, 0.14);
 
   /* Animations */
   --animate-enter: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -50,12 +49,30 @@
 }
 
 :root {
-  --background: #000000;
-  --foreground: #e4e4e7;
+  --background: #05070b;
+  --foreground: #e5edf6;
 }
 
 body {
-  background: var(--background);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    radial-gradient(
+      circle at 12% 0%,
+      rgba(37, 99, 235, 0.14),
+      transparent 32rem
+    ),
+    radial-gradient(
+      circle at 88% 12%,
+      rgba(0, 229, 168, 0.08),
+      transparent 28rem
+    ), var(--background);
+  background-size:
+    48px 48px,
+    48px 48px,
+    auto,
+    auto,
+    auto;
   color: var(--foreground);
   font-family: var(--font-sans), "IBM Plex Sans", system-ui, sans-serif;
   position: relative;
@@ -70,44 +87,52 @@ body::before {
   z-index: 50;
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
-  opacity: 0.3;
-}
-
-/* Blue atmospheric edge glows — nkmc.ai edge effect */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 60% 50% at 0% 50%, var(--color-glow-blue), transparent),
-    radial-gradient(ellipse 60% 50% at 100% 50%, var(--color-glow-blue), transparent);
+  opacity: 0.2;
 }
 
 /* Staggered Animation Delays */
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
-.delay-400 { animation-delay: 400ms; }
-.delay-500 { animation-delay: 500ms; }
-.delay-600 { animation-delay: 600ms; }
-.delay-700 { animation-delay: 700ms; }
+.delay-100 {
+  animation-delay: 100ms;
+}
+.delay-200 {
+  animation-delay: 200ms;
+}
+.delay-300 {
+  animation-delay: 300ms;
+}
+.delay-400 {
+  animation-delay: 400ms;
+}
+.delay-500 {
+  animation-delay: 500ms;
+}
+.delay-600 {
+  animation-delay: 600ms;
+}
+.delay-700 {
+  animation-delay: 700ms;
+}
 
 /* Typography Utilities */
 .label-subtle {
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
+  letter-spacing: 0;
   font-weight: 600;
-  color: rgba(161, 161, 170, 0.6);
+  color: rgba(148, 163, 184, 0.72);
 }
 
 /* Section divider — thin horizontal rule */
 .section-divider {
   border: none;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06) 20%, rgba(255, 255, 255, 0.06) 80%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.06) 20%,
+    rgba(255, 255, 255, 0.06) 80%,
+    transparent
+  );
 }
 
 /* Terminal cursor blink */
@@ -122,4 +147,25 @@ body::after {
 .terminal-prompt {
   color: var(--color-neon-500);
   font-family: var(--font-mono), "JetBrains Mono", monospace;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-neon-400);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: rgba(56, 189, 248, 0.28);
+  color: #f8fafc;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
+    scroll-behavior: auto;
+    transition-duration: 1ms;
+  }
 }

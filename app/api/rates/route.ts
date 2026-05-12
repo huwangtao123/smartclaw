@@ -9,15 +9,9 @@ export async function GET(request: Request) {
   const maParam = url.searchParams.get("maWindow");
   const maWindow = maParam ? Number(maParam) : undefined;
 
-  const fallbackFile =
-    url.searchParams.get("fallback") ??
-    process.env.RATES_FALLBACK_FILE ??
-    undefined;
-
   try {
     const data = await loadRates({
       maWindow: Number.isFinite(maWindow) ? maWindow : undefined,
-      fallbackFile: fallbackFile ?? undefined,
     });
 
     if (data.series.length === 0) {

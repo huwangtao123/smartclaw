@@ -86,8 +86,7 @@ All public endpoints include `operationId` fields that agents can use as functio
 - `getFxusdRate` – fxUSD borrow APR
 - `getTopPnl` – top PNL wallets
 - `getRates` – cross-protocol lending rate comparison
-- `getPremiumMetrics` – premium leaderboard (x402 paywall)
-- `createX402SessionToken` – initiate premium checkout
+- `getPremiumMetrics` – public leaderboard metrics
 
 ### Use as an Agent Skill
 
@@ -104,12 +103,6 @@ openclaw skill add https://smartclaw.xyz/SKILL.md
 
 ---
 
-## Premium Access Configuration
+## Leaderboard Access
 
-Premium endpoints are gated behind x402 at $0.01 fxUSD per call on Base network. Configure the following environment variables:
-
-- `PREMIUM_ACCESS_SECRET` – required secret used to sign the premium-access cookie; rotate if compromised.
-- `RESOURCE_WALLET_ADDRESS` – wallet address that receives payments.
-- `X402_NETWORK` – blockchain network (default: `base`).
-
-Both `/premium` and `/api/premium` use this configuration. Update your environment and restart the app after changing values.
+`/premium` and `/api/premium` are public endpoints that expose the full leaderboard analytics view with no payment step.

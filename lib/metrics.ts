@@ -33,6 +33,11 @@ export function computeMetrics(traders: Trader[]): DashboardMetrics {
     )
     .slice(0, 10);
 
+  const topByVolume = traders
+    .slice()
+    .sort((a, b) => (b.vol ?? 0) - (a.vol ?? 0))
+    .slice(0, 10);
+
   const avgRoi = totalTraders
     ? traders.reduce((acc, row) => acc + (row.roi ?? 0), 0) / totalTraders
     : 0;
@@ -52,6 +57,7 @@ export function computeMetrics(traders: Trader[]): DashboardMetrics {
     avgRoi,
     topByPnl,
     topByRoi,
+    topByVolume,
     hasMajorityMomentum: weightedWinningRate >= 0.5,
   };
 }

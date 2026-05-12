@@ -12,7 +12,6 @@ export async function GET() {
   const metrics = computeMetrics(traders);
 
   return NextResponse.json({
-    x402Version: 1,
     protocol: "fx",
     topByPnl: metrics.topByPnl,
     topByRoi: metrics.topByRoi,
